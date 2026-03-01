@@ -1,0 +1,112 @@
+<div class="min-h-screen bg-slate-50 flex flex-col font-sans overflow-hidden relative">
+  <!-- Corner illustrations -->
+  <div class="absolute top-4 right-4 w-8 h-8 animate-bounce">
+    <div class="w-full h-full bg-blue-800 rounded-full opacity-60"></div>
+  </div>
+  <div class="absolute top-20 left-4 w-6 h-6 animate-bounce">
+    <div class="w-full h-full bg-blue-950 rounded-full opacity-50"></div>
+  </div>
+  <div class="absolute bottom-4 left-4 w-10 h-10 animate-bounce">
+    <div class="w-full h-full bg-blue-500 rounded-full opacity-40"></div>
+  </div>
+  <div class="absolute bottom-20 right-8 w-7 h-7 animate-bounce">
+    <div class="w-full h-full bg-blue-600 rounded-full opacity-70"></div>
+  </div>
+  <div class="absolute top-1/2 left-2 w-5 h-5 animate-bounce">
+    <div class="w-full h-full bg-blue-400 rounded-full opacity-60"></div>
+  </div>
+
+  <!-- Header / Logo -->
+  <header class="flex items-center px-4 sm:px-10 py-4 sm:py-6">
+    <!-- Logo animation placeholder -->
+    <div class="w-8 h-8 sm:w-10 sm:h-10 mr-2">
+      <img
+        src="/login-page-images/illustration_1.png"
+        alt="Dashboard illustration"
+        class="w-full h-full object-contain"
+      />
+    </div>
+    <div class="text-lg sm:text-xl font-bold text-blue-900">TASKIFY</div>
+  </header>
+
+
+  <!-- Main content -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-2 items-center gap-6 lg:gap-10 px-4 sm:px-10 lg:px-20">
+    <!-- Left: Login form -->
+    <section class="w-full max-w-md mx-auto lg:mx-0">
+
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 mb-2">Login</h1>
+      <p class="text-sm sm:text-base text-slate-500 mb-6 sm:mb-8">Welcome back! Please login to your account.</p>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()"  class="space-y-5">
+        <div class="flex flex-col">
+          <label class="text-sm text-slate-700 mb-1">Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="your-email@gmail.com"
+            class="px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+        </div>
+        <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
+             class="text-red-500 text-sm mt-1">
+          <span *ngIf="form.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="form.get('email')?.errors?.['email']">Invalid email format</span>
+        </div>
+
+
+        <div class="flex flex-col">
+          <label class="text-sm text-slate-700 mb-1">Password</label>
+          <div class="relative">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              class="px-4 py-3 pr-12 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 w-full"
+            />
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700"
+            >
+              @if (!showPassword) {
+                <span>👁️</span>
+              } @else {
+                <span>🫣</span>
+              }
+            </button>
+          </div>
+          <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="text-red-500 text-sm mt-1">
+            <span *ngIf="form.get('password')?.errors?.['required']">Password is required</span>
+            <span *ngIf="form.get('password')?.errors?.['minlength']">Password must be at least 8 characters</span>
+          </div>
+        </div>
+
+
+        <button
+          type="submit"
+          [disabled]="form.invalid"
+          class="w-full mt-4 py-3 rounded-lg text-white font-medium transition shadow-lg hover:shadow-xl cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+          style="background-color: #6c63ff;"
+        >
+          Login
+        </button>
+      </form>
+
+
+      <!-- Form animation placeholder -->
+      <div class="mt-6 sm:mt-8 w-24 h-24 sm:w-32 sm:h-32 hidden sm:block"></div>
+    </section>
+
+
+    <!-- Right: Illustration -->
+    <section class="hidden lg:flex items-center justify-center">
+      <img
+        src="/login-page-images/image_1.png"
+        alt="Dashboard illustration"
+        class="w-full h-auto scale-125 lg:scale-150 mb-12"
+      />
+    </section>
+
+  </main>
+</div>
