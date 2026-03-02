@@ -13,12 +13,14 @@ import { Router } from '@angular/router';
 })
 export class LoginPage {
   form = new FormGroup({
+    username: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required])
   }
   );
   showPassword = false;
   errorMessage = '';
+  isSignup = false;
 
   constructor(private router:Router,private auth:AuthService, private storageService:StorageService, private cdr: ChangeDetectorRef) {}
 
@@ -43,6 +45,11 @@ export class LoginPage {
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
+  }
 
+  toggleForm() {
+    this.isSignup = !this.isSignup;
+    this.errorMessage = '';
+    this.form.reset();
   }
 }
