@@ -12,15 +12,14 @@ import { Router } from '@angular/router';
   styleUrl: './login-page.css',
 })
 export class LoginPage {
-  form = new FormGroup({
-    username: new FormControl('', [Validators.required]),
+  isSignup = false;
+  form: FormGroup = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required])
-  }
-  );
+  });
   showPassword = false;
   errorMessage = '';
-  isSignup = false;
+
 
   constructor(private router:Router,private auth:AuthService, private storageService:StorageService, private cdr: ChangeDetectorRef) {}
 
@@ -31,16 +30,24 @@ export class LoginPage {
     }
 
     this.errorMessage = '';
-    this.auth.authenticateUser(this.form.value.email, this.form.value.password).subscribe({
-      next: (response: any) => {
-        this.storageService.storeToken(response.token);
-        void this.router.navigate(['user/dashboard']);
-      },
-      error: (error: any) => {
-        this.errorMessage = 'Invalid email or password';
-        this.cdr.detectChanges();
-      }
-    });
+
+    if (this.isSignup) {
+      // Handle signup
+      // TODO: Implement signup API call
+      console.log('Signup:', this.form.value);
+    } else {
+      // Handle login
+      this.auth.authenticateUser(this.form.value.email, this.form.value.password).subscribe({
+        next: (response: any) => {
+          this.storageService.storeToken(response.token);
+          void this.router.navigate(['user/dashboard']);
+        },
+        error: (error: any) => {
+          this.errorMessage = 'Invalid email or password';
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   togglePasswordVisibility() {
@@ -51,5 +58,11 @@ export class LoginPage {
     this.isSignup = !this.isSignup;
     this.errorMessage = '';
     this.form.reset();
+    
+    if (this.isSignup) {
+      (this.form as any).addControl('username', new FormControl('', [Validators.required]));
+    } else {
+      (this.form as any).removeControl('username');
+    }
   }
 }
