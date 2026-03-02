@@ -1,5 +1,5 @@
 {
-  "name": "project-management-system-frontend",
+  "name": "techInterview-AI-frontend",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:project-management-system-frontend": "node dist/project-management-system-frontend/server/server.mjs"
+    "serve:ssr:techInterview-AI-frontend": "node dist/techInterview-AI-frontend/server/server.mjs"
   },
   "prettier": {
     "printWidth": 100,

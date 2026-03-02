@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {ReactiveFormsModule, FormControl,Validators, FormGroup} from '@angular/forms';
 import {AuthService} from '../../auth.service';
@@ -18,8 +18,9 @@ export class LoginPage {
   }
   );
   showPassword = false;
+  errorMessage = '';
 
-  constructor(private router:Router,private auth:AuthService, private storageService:StorageService) {}
+  constructor(private router:Router,private auth:AuthService, private storageService:StorageService, private cdr: ChangeDetectorRef) {}
 
   onSubmit() {
     if (this.form.invalid) {
@@ -27,15 +28,15 @@ export class LoginPage {
       return;
     }
 
+    this.errorMessage = '';
     this.auth.authenticateUser(this.form.value.email, this.form.value.password).subscribe({
       next: (response: any) => {
         this.storageService.storeToken(response.token);
-
         void this.router.navigate(['user/dashboard']);
-
       },
       error: (error: any) => {
-        console.error(error);
+        this.errorMessage = 'Invalid email or password';
+        this.cdr.detectChanges();
       }
     });
   }
