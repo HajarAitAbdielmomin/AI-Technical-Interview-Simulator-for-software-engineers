@@ -9,6 +9,7 @@ import com.techinterviewai.jwt.JwtResponse;
 public interface UserService {
      JwtResponse authenticateUser(UserSigninDto loginRequest)
             throws UserNotFoundException;
-    void registerUser(UserSignupDto signupRequestDTO)
+     void registerUser(UserSignupDto signupRequestDTO)
             throws UserAlreadyExistsException;
+     boolean removeUser(Long id);
 }

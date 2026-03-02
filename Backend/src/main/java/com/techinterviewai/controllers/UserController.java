@@ -12,24 +12,30 @@ import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserServiceImpl userService;
 
-    @PostMapping("/signin")
+    @PostMapping("/auth/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserSigninDto loginRequest)
             throws UserNotFoundException {
         return ResponseEntity.ok(userService.authenticateUser(loginRequest));
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/auth/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserSignupDto signupRequestDTO)
             throws UserAlreadyExistsException {
         userService.registerUser(signupRequestDTO);
         return ResponseEntity.ok("User registered successfully");
     }
 
+    @DeleteMapping("/user/delete/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        return userService.removeUser(id) ?
+                ResponseEntity.ok("User deleted successfully") :
+                ResponseEntity.badRequest().body("User deletion failed");
+    }
 
 }

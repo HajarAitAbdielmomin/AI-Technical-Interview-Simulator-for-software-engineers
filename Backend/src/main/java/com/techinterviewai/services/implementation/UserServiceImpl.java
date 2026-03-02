@@ -19,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -66,6 +68,14 @@ public class UserServiceImpl implements UserService {
                 .id(userDetails.getId())
                 .token(jwt)
                 .email(userDetails.getUsername())
+                .username((userDetails.getNickname()))
                 .build();
+    }
+
+    @Override
+    public boolean removeUser(Long id) {
+       Optional<User> user = userRepository.findById(id);
+       user.ifPresent(userRepository::delete);
+       return user.isPresent();
     }
 }
