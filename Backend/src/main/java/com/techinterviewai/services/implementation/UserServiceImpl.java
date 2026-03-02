@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
     private final UserSigninMapper userSigninMapper;
 
     @Override
-    public boolean registerUser(UserSignupDto signupRequestDTO) throws UserAlreadyExistsException {
+    public void registerUser(UserSignupDto signupRequestDTO) throws UserAlreadyExistsException {
         if(userRepository.existsUserByEmailOrUsername(signupRequestDTO.getEmail(), signupRequestDTO.getUsername()))
             throw new UserAlreadyExistsException("User already exists");
 
@@ -38,7 +38,6 @@ public class UserServiceImpl implements UserService {
         user.setPassword(encoder.encode(user.getPassword()));
 
         userRepository.save(user);
-        return true;
     }
 
     @Override

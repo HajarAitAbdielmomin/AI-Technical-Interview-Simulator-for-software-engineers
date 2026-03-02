@@ -7,8 +7,8 @@ import com.techinterviewai.exceptions.UserNotFoundException;
 import com.techinterviewai.jwt.JwtResponse;
 
 public interface UserService {
-    public JwtResponse authenticateUser(UserSigninDto loginRequest)
+     JwtResponse authenticateUser(UserSigninDto loginRequest)
             throws UserNotFoundException;
-    boolean registerUser(UserSignupDto signupRequestDTO)
+    void registerUser(UserSignupDto signupRequestDTO)
             throws UserAlreadyExistsException;
 }
