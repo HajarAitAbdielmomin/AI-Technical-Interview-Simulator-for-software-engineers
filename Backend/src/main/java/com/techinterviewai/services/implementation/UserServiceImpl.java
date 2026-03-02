@@ -10,7 +10,7 @@ import com.techinterviewai.mappers.UserMapper;
 import com.techinterviewai.mappers.UserSigninMapper;
 import com.techinterviewai.models.User;
 import com.techinterviewai.repository.UserRepository;
-import com.techinterviewai.services.AuthService;
+import com.techinterviewai.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService {
+public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;

@@ -4,8 +4,7 @@ import com.techinterviewai.dto.UserSigninDto;
 import com.techinterviewai.dto.UserSignupDto;
 import com.techinterviewai.exceptions.UserAlreadyExistsException;
 import com.techinterviewai.exceptions.UserNotFoundException;
-import com.techinterviewai.mappers.UserSigninMapper;
-import com.techinterviewai.services.implementation.AuthServiceImpl;
+import com.techinterviewai.services.implementation.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,18 +16,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final AuthServiceImpl authService;
+    private final UserServiceImpl userService;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody UserSigninDto loginRequest)
             throws UserNotFoundException {
-        return ResponseEntity.ok(authService.authenticateUser(loginRequest));
+        return ResponseEntity.ok(userService.authenticateUser(loginRequest));
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserSignupDto signupRequestDTO)
             throws UserAlreadyExistsException {
-        authService.registerUser(signupRequestDTO);
+        userService.registerUser(signupRequestDTO);
         return ResponseEntity.ok("User registered successfully");
     }
 
