@@ -19,4 +19,8 @@ export class AuthService {
     const url = `${baseUrl}/auth/signin`;
     return this.http.post(url, { email, password }, httpOptions);
   }
+  createUser(username: any,email: any, password: any):Observable<any> {
+    const url = `${baseUrl}/auth/signup`;
+    return this.http.post(url, { username, email, password }, { ...httpOptions, responseType: 'text' });
+  }
 }

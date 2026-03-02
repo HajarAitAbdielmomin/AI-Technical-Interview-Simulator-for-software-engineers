@@ -19,6 +19,7 @@ export class LoginPage {
   });
   showPassword = false;
   errorMessage = '';
+  successMessage = '';
 
 
   constructor(private router:Router,private auth:AuthService, private storageService:StorageService, private cdr: ChangeDetectorRef) {}
@@ -30,11 +31,24 @@ export class LoginPage {
     }
 
     this.errorMessage = '';
+    this.successMessage = '';
 
     if (this.isSignup) {
-      // Handle signup
-      // TODO: Implement signup API call
-      console.log('Signup:', this.form.value);
+      this.auth.createUser(this.form.value.username,this.form.value.email, this.form.value.password).subscribe({
+        next: (response: any) => {
+          console.log('User created:', response);
+          this.successMessage = 'Account created successfully! Please login.';
+          this.isSignup = false;
+          this.form.reset();
+          (this.form as any).removeControl('username');
+          this.cdr.detectChanges();
+        },
+        error: (error: any) => {
+          console.error('Signup error:', error);
+          this.errorMessage = error.error || 'Error creating user';
+          this.cdr.detectChanges();
+        }
+      })
     } else {
       // Handle login
       this.auth.authenticateUser(this.form.value.email, this.form.value.password).subscribe({
@@ -57,8 +71,9 @@ export class LoginPage {
   toggleForm() {
     this.isSignup = !this.isSignup;
     this.errorMessage = '';
+    this.successMessage = '';
     this.form.reset();
-    
+
     if (this.isSignup) {
       (this.form as any).addControl('username', new FormControl('', [Validators.required]));
     } else {
