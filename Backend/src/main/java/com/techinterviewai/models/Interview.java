@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -28,7 +29,9 @@ public class Interview {
 	private Level level;
 	@Enumerated(EnumType.STRING)
 	private Status status;
+	@CreatedDate
 	private LocalDateTime startTime;
+
 	private LocalDateTime endTime;
 	@ManyToOne
 	@JoinColumn(name = "user_id")
