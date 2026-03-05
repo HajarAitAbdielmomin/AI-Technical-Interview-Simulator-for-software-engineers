@@ -39,6 +39,6 @@ public class Interview {
 	@OneToOne(mappedBy = "interview", cascade = CascadeType.ALL)
 	public Feedback feedback;
 	@OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
-	public List<QuestionAnswer> questionAnswer = new ArrayList<>();
+	public List<QuestionAnswer> questionAnswer;
 }
 
