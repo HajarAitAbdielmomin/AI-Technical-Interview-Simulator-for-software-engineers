@@ -1,5 +1,6 @@
 package com.techinterviewai.services.implementation;
 
+import com.techinterviewai.dto.ResumeInterviewResponseDto;
 import com.techinterviewai.dto.SubmitAnswerResponseDto;
 import com.techinterviewai.dto.NextQuestionResponseDto;
 import com.techinterviewai.dto.QuestionAnswerDto;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -41,22 +43,23 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     @Transactional
-    public boolean startInterview(InterviewDto interviewDto) {
+    public Long startInterview(InterviewDto interviewDto) {
         Interview interview = interviewMapper.toEntity(interviewDto);
 
-        if(interview == null) return false;
+        if(interview == null) return -1L;
 
         User user = userRepository.findById(interviewDto.getUserId()).orElseThrow(
                 () -> new UserNotFoundException("User not found with id: " + interviewDto.getUserId())
         );
 
         interview.setUser(user);
+        interview.setEndTime(LocalDateTime.now().plusMinutes(30));
         interview.setStatus(Status.IN_PROGRESS);
 
 
         interviewRepository.save(interview);
 
-        return true;
+        return interviewRepository.save(interview).getId();
     }
     @Override
     public void validateNoPendingAnswer(Long interviewId) {
@@ -141,6 +144,30 @@ public class InterviewServiceImpl implements InterviewService {
         return true;
     }
 
+    @Override
+    public Long getRemainingTime(LocalDateTime startTime) {
+        LocalDateTime now = LocalDateTime.now();
+        long elapsedSeconds = Duration.between(startTime, now).getSeconds();
+        long totalSeconds = 60 * 30;
+        return Math.max(0, totalSeconds - elapsedSeconds);
+    }
 
-
+    @Override
+    public ResumeInterviewResponseDto resumeInterview(Long interviewId) {
+        Interview interview = getInterviewById(interviewId);
+        
+        long remainingSeconds = getRemainingTime(interview.getStartTime());
+        
+        return new ResumeInterviewResponseDto(
+            interview.getId(),
+            interview.getStatus(),
+            interview.getTechStack(),
+            interview.getInterviewerType(),
+            interview.getLevel(),
+            Math.max(0, remainingSeconds),
+            interview.getQuestionAnswer().size(),
+            maxQuestions,
+            interview.getQuestionAnswer()
+        );
+    }
 }

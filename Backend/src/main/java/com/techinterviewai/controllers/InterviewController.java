@@ -28,9 +28,7 @@ public class InterviewController {
 
     @PostMapping("/start")
     public ResponseEntity<?> startInterview(@Valid @RequestBody InterviewDto interviewDto) {
-        return interviewService.startInterview(interviewDto) ?
-                ResponseEntity.ok().body("Interview started successfully"):
-                ResponseEntity.badRequest().body("Failed to start interview");
+        return ResponseEntity.ok(interviewService.startInterview(interviewDto));
     }
 
     @GetMapping("/{id}")
@@ -73,5 +71,10 @@ public class InterviewController {
         return interviewService.endInterview(id) ?
                 ResponseEntity.ok().body("Interview ended successfully"):
                 ResponseEntity.badRequest().body("Failed to end interview");
+    }
+
+    @GetMapping("/{id}/resume")
+    public ResponseEntity<?> resumeInterview(@PathVariable Long id) {
+        return ResponseEntity.ok(interviewService.resumeInterview(id));
     }
 }
