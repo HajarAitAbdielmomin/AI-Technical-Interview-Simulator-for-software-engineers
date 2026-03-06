@@ -5,6 +5,7 @@ import com.techinterviewai.dto.NextQuestionResponseDto;
 import com.techinterviewai.dto.QuestionAnswerDto;
 import com.techinterviewai.dto.InterviewDto;
 import com.techinterviewai.enums.Status;
+import com.techinterviewai.exceptions.QuestionsOutOfBoundException;
 import com.techinterviewai.exceptions.UserNotFoundException;
 import com.techinterviewai.mappers.QuestionAnswerMapper;
 import com.techinterviewai.mappers.InterviewMapper;
@@ -51,7 +52,7 @@ public class InterviewServiceImpl implements InterviewService {
         interview.setUser(user);
         interview.setStatus(Status.IN_PROGRESS);
 
-        System.out.println("Saving interview : " + interview);
+        //System.out.println("Saving interview : " + interview);
 
         interviewRepository.save(interview);
 
@@ -72,8 +73,8 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     @Transactional
-    public SubmitAnswerResponseDto submitAnswer(Long interviewId, String userAnswer) {
-        Interview interview = getInterviewById(interviewId);
+    public QuestionAnswer submitAnswer(QuestionAnswerDto questionAnswerDto) {
+        Interview interview = getInterviewById(questionAnswerDto.getInterviewId());
 
         QuestionAnswer pending = interview.getQuestionAnswer().stream()
                 .filter(qa -> qa.getUserAnswer() == null || qa.getUserAnswer().isBlank())
@@ -82,17 +83,9 @@ public class InterviewServiceImpl implements InterviewService {
                         "No pending question found. Call /next-question first."
                 ));
 
-        pending.setUserAnswer(userAnswer);
-        QuestionAnswer saved = questionAnswerRepository.save(pending);
-        
-        boolean complete = isComplete(interviewId);
+        pending.setUserAnswer(questionAnswerDto.getUserAnswer());
+        return questionAnswerRepository.save(pending);
 
-        return new SubmitAnswerResponseDto(
-                saved.getId(),
-                saved.getQuestion(),
-                saved.getUserAnswer(),
-                complete
-        );
     }
 
     @Override
@@ -104,13 +97,14 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     @Transactional
-    public NextQuestionResponseDto getNextQuestion(Long interviewId) {
+    public String getNextQuestion(Long interviewId) {
         Interview interview = getInterviewById(interviewId);
 
         int questionNumber = interview.getQuestionAnswer().size() + 1;
 
         if (questionNumber > maxQuestions) {
-            throw new IllegalStateException("Maximum of " + maxQuestions + " questions reached.");
+            throw new QuestionsOutOfBoundException(
+                    "Question number " + questionNumber + " exceeds maximum allowed questions.");
         }
 
         // Call GPT-4o mini with full message history
@@ -126,12 +120,7 @@ public class InterviewServiceImpl implements InterviewService {
         qa.setInterview(interview);
         questionAnswerRepository.save(qa);
 
-        return new NextQuestionResponseDto(
-                question,
-                questionNumber,
-                maxQuestions,
-                questionNumber >= maxQuestions
-        );
+        return question;
     }
 
     @Override

@@ -5,6 +5,8 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 public class AIConfig {
@@ -12,5 +14,11 @@ public class AIConfig {
     @Qualifier("questionChatClient")
     public ChatClient questionChatClient(OpenAiChatModel openAiChatModel) {
         return ChatClient.builder(openAiChatModel).build();
+    }
+
+    @Bean
+    public RestClient.Builder restClientBuilder() {
+        return RestClient.builder()
+                .requestFactory(new HttpComponentsClientHttpRequestFactory());
     }
 }

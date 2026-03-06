@@ -1,5 +1,6 @@
 package com.techinterviewai.services;
 
+import com.techinterviewai.dto.QuestionAnswerDto;
 import com.techinterviewai.dto.SubmitAnswerResponseDto;
 import com.techinterviewai.dto.NextQuestionResponseDto;
 import com.techinterviewai.dto.InterviewDto;
@@ -13,7 +14,7 @@ public interface InterviewService {
     Interview getInterviewById(Long id);
     boolean isComplete(Long interviewId);
     boolean endInterview(Long interviewId);
-    NextQuestionResponseDto getNextQuestion(Long interviewId);
-    SubmitAnswerResponseDto submitAnswer(Long interviewId, String userAnswer);
+    String getNextQuestion(Long interviewId);
+    QuestionAnswer submitAnswer(QuestionAnswerDto questionAnswerDto);
     void validateNoPendingAnswer(Long interviewId);
 }

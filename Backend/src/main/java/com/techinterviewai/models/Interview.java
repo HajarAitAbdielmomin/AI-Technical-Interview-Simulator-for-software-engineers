@@ -38,7 +38,7 @@ public class Interview {
 	public User user;
 	@OneToOne(mappedBy = "interview", cascade = CascadeType.ALL)
 	public Feedback feedback;
-	@OneToMany(mappedBy = "interview", cascade = CascadeType.ALL)
-	public List<QuestionAnswer> questionAnswer;
+	@OneToMany(mappedBy = "interview", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	public List<QuestionAnswer> questionAnswer = new ArrayList<>();
 }
 

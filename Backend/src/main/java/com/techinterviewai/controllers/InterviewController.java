@@ -1,16 +1,15 @@
 package com.techinterviewai.controllers;
 
-import com.techinterviewai.dto.SubmitAnswerResponseDto;
-import com.techinterviewai.dto.NextQuestionResponseDto;
 import com.techinterviewai.dto.InterviewDto;
+import com.techinterviewai.dto.QuestionAnswerDto;
 import com.techinterviewai.models.Interview;
 import com.techinterviewai.models.QuestionAnswer;
 import com.techinterviewai.services.implementation.InterviewServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 
@@ -21,7 +20,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InterviewController {
     private final InterviewServiceImpl interviewService;
-
     @Value("${app.interview.max-questions:8}")
     private int maxQuestions;
 
@@ -40,15 +38,34 @@ public class InterviewController {
         return ResponseEntity.ok(interviewService.getInterviewById(id));
     }
 
-    @PostMapping("/{id}/next-question")
+    @GetMapping("/{id}/next-question")
     public ResponseEntity<?> nextQuestion(@PathVariable Long id) {
         interviewService.validateNoPendingAnswer(id);
-        return ResponseEntity.ok(interviewService.getNextQuestion(id));
+        String question = interviewService.getNextQuestion(id);
+        Interview interview = interviewService.getInterviewById(id);
+
+        int questionNumber = interview.getQuestionAnswer().size();
+        boolean isLast = questionNumber >= maxQuestions;
+
+        return ResponseEntity.ok(Map.of(
+                "question",       question,
+                "questionNumber", questionNumber,
+                "totalQuestions", maxQuestions,
+                "isLastQuestion", isLast
+        ));
     }
 
-    @PostMapping("/{id}/answer")
-    public ResponseEntity<?> submitAnswer(@PathVariable Long id, @Valid @RequestBody String req) {
-        return ResponseEntity.ok(interviewService.submitAnswer(id, req));
+    @PostMapping("/answer")
+    public ResponseEntity<?> submitAnswer(@Valid @RequestBody QuestionAnswerDto questionAnswerDto) {
+        QuestionAnswer saved = interviewService.submitAnswer(questionAnswerDto);
+        boolean complete = interviewService.isComplete(questionAnswerDto.getInterviewId());
+
+        return ResponseEntity.ok(Map.of(
+                "questionAnswerId",  saved.getId(),
+                "question",          saved.getQuestion(),
+                "userAnswer",        saved.getUserAnswer(),
+                "interviewComplete", complete
+        ));
     }
 
     @PostMapping("/{id}/end")
