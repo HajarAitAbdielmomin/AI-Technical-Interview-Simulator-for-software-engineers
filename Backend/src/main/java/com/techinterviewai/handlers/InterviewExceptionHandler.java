@@ -1,6 +1,7 @@
 package com.techinterviewai.handlers;
 
 import com.techinterviewai.exceptions.InterviewNotFoundException;
+import com.techinterviewai.exceptions.PendingAnswerException;
 import com.techinterviewai.exceptions.QuestionsOutOfBoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,11 @@ public class InterviewExceptionHandler {
 
     @ExceptionHandler(QuestionsOutOfBoundException.class)
     public ResponseEntity<String> handleQuestionsOutOfBoundException(QuestionsOutOfBoundException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(PendingAnswerException.class)
+    public ResponseEntity<String> handlePendingAnswerException(PendingAnswerException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

@@ -5,6 +5,7 @@ import com.techinterviewai.dto.NextQuestionResponseDto;
 import com.techinterviewai.dto.QuestionAnswerDto;
 import com.techinterviewai.dto.InterviewDto;
 import com.techinterviewai.enums.Status;
+import com.techinterviewai.exceptions.PendingAnswerException;
 import com.techinterviewai.exceptions.QuestionsOutOfBoundException;
 import com.techinterviewai.exceptions.UserNotFoundException;
 import com.techinterviewai.mappers.QuestionAnswerMapper;
@@ -52,7 +53,6 @@ public class InterviewServiceImpl implements InterviewService {
         interview.setUser(user);
         interview.setStatus(Status.IN_PROGRESS);
 
-        //System.out.println("Saving interview : " + interview);
 
         interviewRepository.save(interview);
 
@@ -64,7 +64,7 @@ public class InterviewServiceImpl implements InterviewService {
         boolean hasPending = interview.getQuestionAnswer().stream()
                 .anyMatch(qa -> qa.getUserAnswer() == null || qa.getUserAnswer().isBlank());
         if (hasPending) {
-            throw new IllegalStateException(
+            throw new PendingAnswerException(
                     "Please answer the current question before requesting the next one."
             );
         }
@@ -137,7 +137,8 @@ public class InterviewServiceImpl implements InterviewService {
         Interview interview = getInterviewById(interviewId);
         interview.setStatus(Status.COMPLETED);
         interview.setEndTime(LocalDateTime.now());
-        return false;
+        interviewRepository.save(interview);
+        return true;
     }
 
 

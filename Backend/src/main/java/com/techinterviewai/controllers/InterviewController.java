@@ -68,7 +68,7 @@ public class InterviewController {
         ));
     }
 
-    @PostMapping("/{id}/end")
+    @GetMapping("/{id}/end")
     public ResponseEntity<?> endInterview(@PathVariable Long id) {
         return interviewService.endInterview(id) ?
                 ResponseEntity.ok().body("Interview ended successfully"):
