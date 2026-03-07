@@ -27,7 +27,7 @@
       <div *ngIf="successMessage" class="text-green-500 text-sm  mb-4">
         {{ successMessage }}
       </div>
-      <div *ngIf="errorMessage" class="text-pink-500 text-sm bg-pink-50 p-3 rounded-lg mb-4">
+      <div *ngIf="errorMessage" class="text-red-600 text-sm bg-pink-50 p-3 rounded-lg mb-4">
         {{ errorMessage }}
       </div>
       <form [formGroup]="form" (ngSubmit)="onSubmit()"  class="space-y-5 ">
@@ -39,7 +39,7 @@
             placeholder="Your username"
             class="px-4 py-3 rounded-lg border-2 border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
           />
-          <div *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="text-pink-400 text-sm mt-1 min-h-[1.25rem]">
+          <div *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="text-red-600 text-sm mt-1 min-h-[1.25rem]">
             <span *ngIf="form.get('username')?.errors?.['required']">Username is required</span>
           </div>
         </div>
@@ -52,7 +52,7 @@
             class="px-4 py-3 rounded-lg border-2 border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
           />
           <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
-               class="text-pink-400 text-sm mt-1 min-h-5">
+               class="text-red-600 text-sm mt-1 min-h-5">
           <span *ngIf="form.get('email')?.errors?.['required']">Email is required</span>
           <span *ngIf="form.get('email')?.errors?.['email']">Invalid email format</span>
           </div>
@@ -80,7 +80,7 @@
               }
             </button>
           </div>
-          <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="text-pink-400 text-sm mt-1 min-h-5">
+          <div *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="text-red-600 text-sm mt-1 min-h-5">
             <span *ngIf="form.get('password')?.errors?.['required']">Password is required</span>
             <span *ngIf="form.get('password')?.errors?.['minlength']">Password must be at least 8 characters</span>
           </div>
