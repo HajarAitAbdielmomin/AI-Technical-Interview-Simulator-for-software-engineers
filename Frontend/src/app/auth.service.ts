@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {Observable, tap} from 'rxjs';
+import {StorageService} from './storage.service';
 
 const baseUrl = 'http://localhost:8989/api';
 const httpOptions = {
@@ -13,14 +14,24 @@ const httpOptions = {
 
 export class AuthService {
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private storageService: StorageService) {}
 
   authenticateUser(email: any, password: any): Observable<any> {
-    const url = `${baseUrl}/auth/signin`;
+    const url = `${baseUrl}/users/auth/signin`;
     return this.http.post(url, { email, password }, httpOptions);
   }
   createUser(username: any,email: any, password: any):Observable<any> {
-    const url = `${baseUrl}/auth/signup`;
+    const url = `${baseUrl}/users/auth/signup`;
     return this.http.post(url, { username, email, password }, { ...httpOptions, responseType: 'text' });
+  }
+
+  logout():Observable<any>{
+    const url = `${baseUrl}/auth/logout`;
+    return this.http.post(url, {}).pipe(
+      tap(() => {
+        this.storageService.logout();
+        this.storageService.clean();
+      })
+    );
   }
 }
