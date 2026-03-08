@@ -54,6 +54,7 @@ export class LoginPage {
       this.auth.authenticateUser(this.form.value.email, this.form.value.password).subscribe({
         next: (response: any) => {
           this.storageService.storeToken(response.token);
+          this.storageService.storeUser(response);
           void this.router.navigate(['user/dashboard']);
         },
         error: (error: any) => {

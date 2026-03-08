@@ -66,10 +66,10 @@
           Start Interview
         </button>
         <div class="user-info">
-          <div class="user-avatar">{{ userInitials }}</div>
+          <div class="user-avatar">{{ userInfo?.username.charAt(0).toUpperCase() }}</div>
           <div class="user-details">
-            <span class="user-name">{{ userName }}</span>
-            <span class="user-email">{{ userEmail }}</span>
+            <span class="user-name">{{ userInfo?.username }}</span>
+            <span class="user-email">{{ userInfo?.email }}</span>
           </div>
         </div>
       </div>
@@ -87,9 +87,9 @@
             Ready to practice
           </div>
           <h2 class="welcome-heading">
-            Hi, <span class="username-highlight">{{ firstName }}</span> 👋
+            Hi, <span class="username-highlight">{{ userInfo?.username }}</span> 👋
           </h2>
-          <p class="welcome-sub">Welcome back — ready for your next challenge?</p>
+          <p class="welcome-sub">Welcome back, ready for your next challenge?</p>
           <div class="welcome-actions">
             <button class="btn-primary" routerLink="/user/interview/setup">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">

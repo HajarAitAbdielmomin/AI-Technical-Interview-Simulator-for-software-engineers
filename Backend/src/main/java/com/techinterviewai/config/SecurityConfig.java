@@ -54,7 +54,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.cors(cors -> {})
+                .csrf(AbstractHttpConfigurer::disable)
                 //Configures how to handle authentication errors
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 

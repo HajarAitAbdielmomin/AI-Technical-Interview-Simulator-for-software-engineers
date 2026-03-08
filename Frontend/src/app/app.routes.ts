@@ -9,6 +9,10 @@ export const routes: Routes = [
     component: LoginPage,
   },
   {
+    path: 'auth/login',
+    component: LoginPage,
+  },
+  {
     path: 'user/dashboard',
     component: Dashboard
   },

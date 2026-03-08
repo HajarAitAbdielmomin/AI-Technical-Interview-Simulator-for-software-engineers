@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import {StorageService} from '../../storage.service';
+import {AuthService} from '../../auth.service';
 
 export interface Performance {
   score: number;
@@ -16,11 +18,6 @@ export interface Performance {
   standalone: true
 })
 export class Dashboard {
-// ── User Info (replace with AuthService) ──
-  userName     = 'Alex Carter';
-  userEmail    = 'alex.carter@email.com';
-  userInitials = 'AC';
-  firstName    = 'Alex';
 
   // ── Stats ──
   totalInterviews = 14;
@@ -50,16 +47,18 @@ export class Dashboard {
       feedback: 'Solid basic queries. Practice query optimization, indexing strategies, and EXPLAIN ANALYZE output.'
     }
   ];
-
-  constructor(private router: Router) {}
+  userInfo:any
+  constructor(private router: Router, private storageService: StorageService, private authService : AuthService) {}
 
   ngOnInit(): void {
-    // TODO: inject AuthService & InterviewService to load real data
+    this.userInfo = this.storageService.getUser();
+    //console.log(this.userInfo);
   }
 
   onLogout(): void {
-    // TODO: call AuthService.logout() then navigate
-    this.router.navigate(['/auth/login']);
+    this.authService.logout().subscribe(() => {
+      this.router.navigate(['/auth/login']);
+    });
   }
 
   /** SVG stroke-dasharray for score ring — circumference = 2π × 15 ≈ 94.25 */
