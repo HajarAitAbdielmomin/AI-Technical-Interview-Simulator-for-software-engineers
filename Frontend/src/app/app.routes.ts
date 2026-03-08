@@ -13,11 +13,11 @@ export const routes: Routes = [
     component: Dashboard
   },
   {
-    path: 'interview/setup',
+    path: 'user/interview/setup',
     component: InterviewSetup
   },
   {
-    path: 'interview',
+    path: 'user/interview',
     component: Interview
   }
 ];
