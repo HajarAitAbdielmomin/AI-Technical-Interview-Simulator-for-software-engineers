@@ -51,6 +51,12 @@ export class Dashboard {
   constructor(private router: Router, private storageService: StorageService, private authService : AuthService) {}
 
   ngOnInit(): void {
+
+    if (!this.storageService.getToken()) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
     this.userInfo = this.storageService.getUser();
     //console.log(this.userInfo);
   }
