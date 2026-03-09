@@ -27,7 +27,7 @@ export interface LevelOption       { value: InterviewLevel; label: string; hint:
   templateUrl: './interviewSetup.html',
   styleUrls: ['./interviewSetup.css']
 })
-export class InterviewSetup {
+export class InterviewSetup implements OnInit {
 
   currentStep     = 1;
   customInput     = '';

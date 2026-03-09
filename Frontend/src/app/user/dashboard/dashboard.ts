@@ -17,7 +17,7 @@ export interface Performance {
   styleUrl: './dashboard.css',
   standalone: true
 })
-export class Dashboard {
+export class Dashboard implements OnInit{
 
   // ── Stats ──
   totalInterviews = 14;
@@ -51,7 +51,6 @@ export class Dashboard {
   constructor(private router: Router, private storageService: StorageService, private authService : AuthService) {}
 
   ngOnInit(): void {
-
     if (!this.storageService.getToken()) {
       this.router.navigate(['/auth/login']);
       return;

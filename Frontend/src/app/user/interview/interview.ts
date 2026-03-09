@@ -5,6 +5,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import {StorageService} from '../../storage.service';
 
 export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'HR_BEHAVIORAL';
 export type InterviewLevel  = 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'ARCHITECT';
@@ -106,7 +107,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
       `Let's begin. Tell me about a time you had a significant disagreement with a teammate or manager. How did you handle it, and what was the outcome?`
   };
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private storageService: StorageService) {}
 
   ngOnInit(): void {
     const nav = this.router.getCurrentNavigation();
