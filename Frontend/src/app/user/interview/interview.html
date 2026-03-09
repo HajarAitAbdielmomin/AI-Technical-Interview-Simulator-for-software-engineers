@@ -7,6 +7,54 @@
       <div class="interviewer-avatar">
         <span>{{ interviewerInitials }}</span>
         <span class="avatar-dot" [class.online]="interviewStarted"></span>
+
+        <!-- ── EARLY EXIT CONFIRMATION DIALOG ── -->
+        <div class="dialog-backdrop" *ngIf="showExitDialog" (click)="cancelExit()">
+          <div class="dialog-box" (click)="$event.stopPropagation()">
+
+            <div class="dialog-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+
+            <h2 class="dialog-title">End interview early?</h2>
+
+            <p class="dialog-body" *ngIf="currentQuestionNumber - 1 === 0">
+              You haven't answered any question yet.
+              Leaving now will mark this interview as incomplete.
+            </p>
+            <p class="dialog-body" *ngIf="currentQuestionNumber - 1 !== 0">
+              You've only completed
+              <span class="dialog-highlight">{{ currentQuestionNumber }} of {{ MAX_QUESTIONS }} questions</span>.
+              Leaving now will mark this interview as incomplete and your partial answers will still be saved.
+            </p>
+
+            <div class="dialog-actions">
+              <button class="dialog-btn-cancel" (click)="cancelExit()" [disabled]="isEndingInterview">
+                Keep going
+              </button>
+              <button class="dialog-btn-confirm" (click)="confirmEarlyExit()" [disabled]="isEndingInterview">
+                <span *ngIf="!isEndingInterview">Yes, end now</span>
+                <span *ngIf="isEndingInterview" class="spinner-row">
+            <span class="btn-spinner"></span> Ending…
+          </span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── ENDING OVERLAY (auto-end: timer / all questions done) ── -->
+        <div class="dialog-backdrop" *ngIf="isEndingInterview && !showExitDialog">
+          <div class="dialog-box ending-box">
+            <div class="spinner-large"></div>
+            <p class="ending-text">Wrapping up your session…</p>
+          </div>
+        </div>
+
       </div>
       <div>
         <div class="topbar-name">{{ interviewerName }}</div>
@@ -71,7 +119,7 @@
       <div class="msg-body">
         <div class="msg-sender">{{ interviewerName }}</div>
         <div class="bubble ai-bubble ready-bubble">
-          <p>Are you ready to begin? You'll have <strong>30 minutes</strong> once the timer starts. Click <strong>"Yes, Let's Go!"</strong> to unlock the chat. 🚀</p>
+          <p>Are you ready to begin? You'll have <strong>5 minutes</strong> once the timer starts. Click <strong>"Yes, Let's Go!"</strong> to unlock the chat. 🚀</p>
         </div>
         <div class="msg-time">Just now</div>
 
@@ -182,6 +230,50 @@
       </div>
     </div>
 
+  </div>
+
+
+  <!-- ── EARLY EXIT CONFIRMATION DIALOG ── -->
+  <div class="dialog-backdrop" *ngIf="showExitDialog" (click)="cancelExit()">
+    <div class="dialog-box" (click)="$event.stopPropagation()">
+
+      <div class="dialog-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+
+      <h2 class="dialog-title">End interview early?</h2>
+
+      <p class="dialog-body">
+        You've only completed
+        <span class="dialog-highlight">{{ currentQuestionNumber }} of {{ MAX_QUESTIONS }} questions</span>.
+        Leaving now will mark this interview as incomplete and your partial answers will still be saved.
+      </p>
+
+      <div class="dialog-actions">
+        <button class="dialog-btn-cancel" (click)="cancelExit()" [disabled]="isEndingInterview">
+          Keep going
+        </button>
+        <button class="dialog-btn-confirm" (click)="confirmEarlyExit()" [disabled]="isEndingInterview">
+          <span *ngIf="!isEndingInterview">Yes, end now</span>
+          <span *ngIf="isEndingInterview" class="spinner-row">
+            <span class="btn-spinner"></span> Ending…
+          </span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ENDING OVERLAY (auto-end: timer / all questions done) ── -->
+  <div class="dialog-backdrop" *ngIf="isEndingInterview && !showExitDialog">
+    <div class="dialog-box ending-box">
+      <div class="spinner-large"></div>
+      <p class="ending-text">Wrapping up your session…</p>
+    </div>
   </div>
 
 </div>

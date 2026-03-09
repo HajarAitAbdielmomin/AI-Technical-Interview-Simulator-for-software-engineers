@@ -453,3 +453,140 @@
   .user-name-sm { display: none; }
   .chat-area > *, .input-inner { padding-left: 16px; padding-right: 16px; }
 }
+
+/* ══════════════════════════════════════
+   EXIT CONFIRMATION DIALOG
+══════════════════════════════════════ */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn .2s ease both;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.dialog-box {
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  padding: 36px 32px 28px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  animation: slideUp .25s ease both;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+.dialog-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(252, 101, 126, 0.1);
+  border: 1.5px solid rgba(252, 101, 126, 0.25);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--coral);
+}
+.dialog-icon svg { stroke: var(--coral); }
+
+.dialog-title {
+  font-family: var(--f-display);
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: .3px;
+}
+
+.dialog-body {
+  font-size: .875rem; line-height: 1.65;
+  color: var(--text-soft);
+  max-width: 320px;
+}
+
+.dialog-highlight {
+  color: var(--gold);
+  font-weight: 700;
+  font-family: var(--f-display);
+  font-size: .8rem;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.dialog-btn-cancel {
+  flex: 1;
+  padding: 11px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  color: var(--text-soft);
+  font-family: var(--f-body); font-size: .875rem; font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.dialog-btn-cancel:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dialog-btn-confirm {
+  flex: 1;
+  padding: 11px 20px;
+  background: rgba(252, 101, 126, 0.12);
+  border: 1.5px solid rgba(252, 101, 126, 0.3);
+  border-radius: 50px;
+  color: var(--coral);
+  font-family: var(--f-body); font-size: .875rem; font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.dialog-btn-confirm:hover:not(:disabled) {
+  background: rgba(252, 101, 126, 0.22);
+  border-color: rgba(252, 101, 126, 0.5);
+  transform: translateY(-1px);
+}
+.dialog-btn-cancel:disabled,
+.dialog-btn-confirm:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Spinner inside confirm button */
+.spinner-row {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(252, 101, 126, 0.3);
+  border-top-color: var(--coral);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* Auto-end overlay */
+.ending-box {
+  gap: 20px;
+  padding: 44px 32px;
+}
+.spinner-large {
+  width: 44px; height: 44px;
+  border: 3px solid rgba(255, 211, 92, 0.15);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+.ending-text {
+  font-size: .9rem; font-weight: 600; color: var(--text-soft);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

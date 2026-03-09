@@ -38,8 +38,8 @@ export class InterviewService {
     return this.http.post(url, data , httpOptions);
   }
 
-  endInterview(interviewId: string): Observable<any> {
+  endInterview(interviewId: number): Observable<any> {
     const url = `${environment.apiUrl}/interviews/${interviewId}/end`;
-    return this.http.post(url, {}, httpOptions);
+    return this.http.get(url, httpOptions);
   }
 }
