@@ -25,7 +25,7 @@ export class InterviewService {
   }
 
   createInterview(data: any): Observable<any> {
-    const url = `${environment.apiUrl}/interviews`;
+    const url = `${environment.apiUrl}/interviews/start`;
     return this.http.post(url, data, httpOptions);
   }
 

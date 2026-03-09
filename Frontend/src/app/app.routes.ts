@@ -21,7 +21,7 @@ export const routes: Routes = [
     component: InterviewSetup
   },
   {
-    path: 'user/interview',
+    path: 'user/interview/:id',
     component: Interview
   }
 ];

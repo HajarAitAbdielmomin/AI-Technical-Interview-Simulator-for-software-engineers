@@ -112,8 +112,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     const nav = this.router.getCurrentNavigation();
     if (nav?.extras?.state?.['config']) {
       this.config = nav.extras.state['config'] as InterviewConfig;
-    } else if (history.state?.config) {
-      this.config = history.state.config as InterviewConfig;
     }
   }
 

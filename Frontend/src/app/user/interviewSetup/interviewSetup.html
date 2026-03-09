@@ -60,14 +60,14 @@
     <div class="step-panel" *ngIf="currentStep === 1">
       <div class="step-heading">
         <h2>Choose your Tech Stack</h2>
-        <p>Select one or more technologies — or <span>add your own</span></p>
+        <p>Select one or more technologies or <span>add your own</span></p>
       </div>
 
       <div class="stack-grid">
         <div class="stack-card"
              *ngFor="let stack of presetStacks"
              [class.selected]="stack.selected"
-             (click)="toggleStack(stack)">
+             (click)="selectStack(stack)">
           <span class="stack-icon">{{ stack.emoji }}</span>
           <span class="stack-name">{{ stack.name }}</span>
         </div>
@@ -87,9 +87,9 @@
       </div>
 
       <div class="custom-tags" *ngIf="customStacks.length">
-        <div class="custom-tag" *ngFor="let tag of customStacks">
-          {{ tag }}
-          <button (click)="removeCustomStack(tag)" title="Remove">✕</button>
+        <div class="custom-tag">
+          {{ customStacks[0] }}
+          <button (click)="removeCustomStack()" title="Remove">✕</button>
         </div>
       </div>
     </div>
@@ -127,11 +127,8 @@
       </div>
 
       <div class="review-chips">
-        <div class="review-chip" *ngFor="let s of selectedStacks.slice(0, 4)">
-          <span class="chip-dot"></span>{{ s }}
-        </div>
-        <div class="review-chip" *ngIf="selectedStacks.length > 4">
-          <span class="chip-dot"></span>+{{ selectedStacks.length - 4 }} more
+        <div class="review-chip" *ngIf="selectedStack">
+          <span class="chip-dot"></span>{{ selectedStack }}
         </div>
         <div class="review-chip" *ngIf="selectedInterviewer">
           <span class="chip-dot coral"></span>
@@ -158,15 +155,14 @@
     <div class="step-footer">
       <div class="selection-summary" [style.visibility]="canProceed ? 'visible' : 'hidden'">
         <span class="sel-label">
-          {{ currentStep === 1 ? 'Selected stacks' : currentStep === 2 ? 'Stack' : 'Interviewer' }}
+          {{ currentStep === 1 ? 'Selected stack' : currentStep === 2 ? 'Stack' : 'Interviewer' }}
         </span>
         <div class="sel-value">
           <ng-container *ngIf="currentStep === 1">
-            <span class="sel-chip" *ngFor="let s of selectedStacks.slice(0, 4)">{{ s }}</span>
-            <span class="sel-chip" *ngIf="selectedStacks.length > 4">+{{ selectedStacks.length - 4 }}</span>
+            <span class="sel-chip" *ngIf="selectedStack">{{ selectedStack }}</span>
           </ng-container>
           <ng-container *ngIf="currentStep === 2">
-            <span class="sel-chip" *ngFor="let s of selectedStacks.slice(0, 3)">{{ s }}</span>
+            <span class="sel-chip" *ngIf="selectedStack">{{ selectedStack }}</span>
           </ng-container>
           <ng-container *ngIf="currentStep === 3 && selectedInterviewer">
             <span class="sel-chip">{{ selectedInterviewer.emoji }} {{ selectedInterviewer.title }}</span>

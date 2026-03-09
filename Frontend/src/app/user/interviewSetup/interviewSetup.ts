@@ -2,14 +2,18 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import {AuthService} from '../../auth.service';
+import {StorageService} from '../../storage.service';
+import {InterviewService} from '../../interview.service';
 
 export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'HR_BEHAVIORAL';
 export type InterviewLevel   = 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'ARCHITECT';
 
 export interface InterviewConfig {
-  techStack:      string[];
+  techStack:      string;
   interviewerType: InterviewerType;
   level:          InterviewLevel;
+  userId:         number;
 }
 
 export interface StackOption       { name: string; emoji: string; selected: boolean; }
@@ -59,20 +63,18 @@ export class InterviewSetup {
     { value: 'ARCHITECT', label: 'Architect', hint: 'Distributed systems mastery', xp: '12+ yr',  color: '#fc657e', selected: false },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService, private storageService: StorageService, private interviewService: InterviewService) {}
 
   // ── Getters ──
-  get selectedStacks(): string[] {
-    return [
-      ...this.presetStacks.filter(s => s.selected).map(s => s.name),
-      ...this.customStacks
-    ];
+  get selectedStack(): string | undefined {
+    const preset = this.presetStacks.find(s => s.selected);
+    return preset ? preset.name : this.customStacks[0];
   }
   get selectedInterviewer(): InterviewerOption | undefined { return this.interviewers.find(i => i.selected); }
   get selectedLevel():       LevelOption       | undefined { return this.levels.find(l => l.selected); }
 
   get canProceed(): boolean {
-    if (this.currentStep === 1) return this.selectedStacks.length > 0;
+    if (this.currentStep === 1) return !!this.selectedStack;
     if (this.currentStep === 2) return !!this.selectedInterviewer;
     if (this.currentStep === 3) return !!this.selectedLevel;
     return false;
@@ -80,15 +82,16 @@ export class InterviewSetup {
   get isLastStep(): boolean { return this.currentStep === 3; }
 
   // ── Stack actions ──
-  toggleStack(stack: StackOption): void { stack.selected = !stack.selected; }
+  selectStack(stack: StackOption): void { this.presetStacks.forEach(s => s.selected = false); this.customStacks = []; stack.selected = true; }
   toggleCustomInput(): void { this.showCustomInput = !this.showCustomInput; }
   addCustomStack(): void {
     const val = this.customInput.trim();
-    if (!val || this.customStacks.includes(val)) { this.customInput = ''; return; }
-    this.customStacks.push(val);
+    if (!val) { this.customInput = ''; return; }
+    this.presetStacks.forEach(s => s.selected = false);
+    this.customStacks = [val];
     this.customInput = '';
   }
-  removeCustomStack(val: string): void { this.customStacks = this.customStacks.filter(s => s !== val); }
+  removeCustomStack(): void { this.customStacks = []; }
 
   // ── Interviewer / Level ──
   selectInterviewer(item: InterviewerOption): void { this.interviewers.forEach(i => i.selected = false); item.selected = true; }
@@ -100,10 +103,20 @@ export class InterviewSetup {
 
   launchInterview(): void {
     const config: InterviewConfig = {
-      techStack:      this.selectedStacks,
+      techStack:      this.selectedStack!,
       interviewerType: this.selectedInterviewer!.type,
       level:          this.selectedLevel!.value,
+      userId:          this.storageService.getUser().id,
     };
-    this.router.navigate(['user/interview'], { state: { config } });
+    //console.log('Launching interview with config:', config);
+    this.interviewService.createInterview(config).subscribe(
+      {
+        next: (res) => {
+          //console.log('Interview created:', res);
+          this.router.navigate(['/user/interview', res])
+        },
+        error: (err) => console.error('Interview creation error:', err)
+      }
+    );
   }
 }
