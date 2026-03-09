@@ -185,7 +185,8 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   /** User confirmed early exit from the dialog */
   confirmEarlyExit(): void {
     this.showExitDialog = false;
-    this.endInterviewAndNavigate();
+    clearInterval(this.timerInterval);
+    this.router.navigate(['/user/dashboard']);
   }
 
   /** User changed their mind → close the dialog and keep going */

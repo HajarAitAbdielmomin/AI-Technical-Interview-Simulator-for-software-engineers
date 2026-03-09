@@ -22,11 +22,7 @@
 
             <h2 class="dialog-title">End interview early?</h2>
 
-            <p class="dialog-body" *ngIf="currentQuestionNumber - 1 === 0">
-              You haven't answered any question yet.
-              Leaving now will mark this interview as incomplete.
-            </p>
-            <p class="dialog-body" *ngIf="currentQuestionNumber - 1 !== 0">
+            <p class="dialog-body">
               You've only completed
               <span class="dialog-highlight">{{ currentQuestionNumber }} of {{ MAX_QUESTIONS }} questions</span>.
               Leaving now will mark this interview as incomplete and your partial answers will still be saved.
