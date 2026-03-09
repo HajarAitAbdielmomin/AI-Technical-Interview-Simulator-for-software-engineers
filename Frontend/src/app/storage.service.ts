@@ -19,7 +19,11 @@ export class StorageService {
   }
 
   getToken() {
-    return this.isBrowser() ? localStorage.getItem('token') : null;
+    try {
+      return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    } catch {
+      return null;
+    }
   }
 
   storeUser(user: any) {

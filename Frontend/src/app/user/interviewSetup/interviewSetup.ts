@@ -102,8 +102,9 @@ export class InterviewSetup implements OnInit {
   prevStep(): void { if (this.currentStep > 1) this.currentStep--; }
 
  ngOnInit(){
-   if (!this.storageService.getToken()) {
-     this.router.navigate(['/auth/login']);
+   const token = this.storageService.getToken();
+   if (!token) {
+     setTimeout(() => this.router.navigate(['/auth/login']), 0);
      return;
    }
  }
@@ -114,8 +115,9 @@ export class InterviewSetup implements OnInit {
       level:          this.selectedLevel!.value,
       userId:          this.storageService.getUser().id,
     };
+    this.router.navigate(['/user/interview', 0])
     //console.log('Launching interview with config:', config);
-    this.interviewService.createInterview(config).subscribe(
+    /*this.interviewService.createInterview(config).subscribe(
       {
         next: (res) => {
           //console.log('Interview created:', res);
@@ -123,6 +125,6 @@ export class InterviewSetup implements OnInit {
         },
         error: (err) => console.error('Interview creation error:', err)
       }
-    );
+    );*/
   }
 }
