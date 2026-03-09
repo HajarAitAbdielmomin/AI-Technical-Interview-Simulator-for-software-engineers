@@ -29,13 +29,13 @@ export class InterviewService {
     return this.http.post(url, data, httpOptions);
   }
 
-  generateQuestions(interviewId: string): Observable<any> {
+  generateQuestion(interviewId: string): Observable<any> {
     const url = `${environment.apiUrl}/interviews/${interviewId}/next-question`;
     return this.http.get(url, httpOptions);
   }
-  submitAnswer(interviewId: string, questionId: string, answer: any): Observable<any> {
-    const url = `${environment.apiUrl}/interviews/answers`;
-    return this.http.post(url, { questionId, answer }, httpOptions);
+  submitAnswer(data:any): Observable<any> {
+    const url = `${environment.apiUrl}/interviews/answer`;
+    return this.http.post(url, data , httpOptions);
   }
 
   endInterview(interviewId: string): Observable<any> {

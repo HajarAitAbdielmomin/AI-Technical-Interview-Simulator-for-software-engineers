@@ -1,6 +1,6 @@
 import {
   Component, OnInit, OnDestroy,
-  ViewChild, ElementRef, AfterViewChecked
+  ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
@@ -22,6 +22,25 @@ export interface ChatMessage {
   text: string;
   time: string;
 }
+// ── Shapes returned by your backend ──────────────────────────────────────────
+
+/** Response from POST /generate-question (or equivalent) */
+export interface GenerateQuestionResponse {
+  question:       string;   // the question text to display
+  questionNumber: number;   // e.g. 1 … 8
+  totalQuestions: number;   // always 8
+  isLastQuestion: boolean;  // true when questionNumber === 8
+}
+
+/** Response from POST /submit-answer (or equivalent) */
+export interface SubmitAnswerResponse {
+  questionAnswerId:  string | number;  // saved record id
+  question:          string;           // echoed back question text
+  userAnswer:        string;           // echoed back answer text
+  interviewComplete: boolean;          // true when all 8 answers submitted
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-interview',
@@ -73,10 +92,16 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     }
   };
 
-  get interviewerName():      string { return this.personas[this.config.interviewerType].name; }
-  get interviewerInitials():  string { return this.personas[this.config.interviewerType].initials; }
-  get interviewerStyleDesc(): string { return this.personas[this.config.interviewerType].style; }
-  get interviewerRoleLabel(): string { return this.personas[this.config.interviewerType].role; }
+  get interviewerName():      string { return this.personas[this.config.interviewerType]?.name ?? ''; }
+  get interviewerInitials():  string { return this.personas[this.config.interviewerType]?.initials ?? ''; }
+  get interviewerStyleDesc(): string { return this.personas[this.config.interviewerType]?.style ?? ''; }
+  get interviewerRoleLabel(): string { return this.personas[this.config.interviewerType]?.role ?? ''; }
+
+  // ── Question tracking (max 8) ──
+  readonly MAX_QUESTIONS   = 8;
+  currentQuestionNumber    = 0;   // increments after each GenerateQuestionResponse
+  isLastQuestion           = false;
+  interviewComplete        = false;
 
   // ── Timer ──
   private secondsLeft  = 300; // overridden by endTime − now
@@ -103,11 +128,18 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
   private shouldScroll = false;
 
+  // Progress bar label shown in topbar e.g. "Question 2 / 8"
+  get questionProgress(): string {
+    if (!this.interviewStarted || this.currentQuestionNumber === 0) return '';
+    return `Question ${this.currentQuestionNumber} / ${this.MAX_QUESTIONS}`;
+  }
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private storageService: StorageService,
-    private interviewService: InterviewService
+    private interviewService: InterviewService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -128,7 +160,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
             this.interview = interview;
             this.applyInterviewData(interview);
             this.isLoading = false;
-            console.log('interview loaded', interview);
+            //console.log('interview loaded', this.interview);
           },
           error: (err: any) => {
             console.error('Failed to load interview', err);
@@ -141,30 +173,21 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
   // ─────────────────────────────────────────
   // Map exact API fields to component state
-  // API shape: { id, techStack, interviewerType, level, status, startTime, endTime }
+  // API shape: { id, techStack, interviewerType, level }
   // ─────────────────────────────────────────
   private applyInterviewData(data: any): void {
+    this.config = {
+      techStack:       data.techStack ?? '',
+      interviewerType: data.interviewerType,
+      level:           data.level
+    };
 
-    // techStack — API returns plain string e.g. "K8"
-    this.config.techStack = data.techStack ?? '';
-
-    // interviewerType — API returns "HR_BEHAVIORAL" | "FAANG_STRICT" | "STARTUP_FRIENDLY"
-    const validTypes: InterviewerType[] = ['FAANG_STRICT', 'STARTUP_FRIENDLY', 'HR_BEHAVIORAL'];
-    const rawType = (data.interviewerType ?? 'FAANG_STRICT') as InterviewerType;
-    this.config.interviewerType = validTypes.includes(rawType) ? rawType : 'FAANG_STRICT';
-
-    // level — API returns "JUNIOR" | "MID" | "SENIOR" etc.
-    const validLevels: InterviewLevel[] = ['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'ARCHITECT'];
-    const rawLevel = (data.level ?? 'MID') as InterviewLevel;
-    this.config.level = validLevels.includes(rawLevel) ? rawLevel : 'MID';
-
-    // Duration — compute from endTime − now (API provides ISO strings)
-    // e.g. startTime: "2026-03-09T12:15:17.912551", endTime: "2026-03-09T12:45:17.912551"
     if (data.endTime) {
       const msLeft = new Date(data.endTime).getTime() - Date.now();
-      // If endTime is already past (resumed session), fall back to 5 min
       this.secondsLeft = msLeft > 0 ? Math.floor(msLeft / 1000) : 300;
     }
+
+    this.cdr.markForCheck();
   }
 
   ngAfterViewChecked(): void {
@@ -189,45 +212,11 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
     this.startCountdown();
 
-    setTimeout(() => {
-      this.firstQuestion = this.buildFirstQuestion();
-      this.isTyping      = false;
-      this.shouldScroll  = true;
-      setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
-    }, 2200);
+    this.fetchNextQuestion();
   }
 
   onNotReady(): void {}
 
-  // ── Send message ──
-  sendMessage(): void {
-    const text = this.inputText.trim();
-    if (!text || !this.interviewStarted || this.timeIsUp) return;
-
-    this.messages.push({ role: 'user', text, time: this.nowTime() });
-    this.inputText    = '';
-    this.shouldScroll = true;
-
-    if (this.inputRef) this.inputRef.nativeElement.style.height = 'auto';
-
-    setTimeout(() => {
-      const placeholder: ChatMessage = { role: 'ai', text: '...', time: '' };
-      this.messages.push(placeholder);
-      this.shouldScroll = true;
-
-      setTimeout(() => {
-        const idx = this.messages.indexOf(placeholder);
-        if (idx !== -1) {
-          this.messages[idx] = {
-            role: 'ai',
-            text: this.generateResponse(),
-            time: this.nowTime()
-          };
-          this.shouldScroll = true;
-        }
-      }, 1800);
-    }, 600);
-  }
 
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -256,30 +245,130 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         clearInterval(this.timerInterval);
         this.messages.push({
           role: 'ai',
-          text: `⏱️ Time's up, ${this.userName}! That wraps up our session. Thank you for your answers — I'll have feedback for you shortly.`,
+          text: `⏱️ Time's up, ${this.userName}! That wraps up our session. Thank you for your answers, I'll have feedback for you shortly.`,
           time: this.nowTime()
         });
         this.shouldScroll = true;
       }
     }, 1000);
   }
-
-  // ── Build opening question from interviewerType + techStack + level ──
-  private buildFirstQuestion(): string {
-    const stack = this.config.techStack || 'the relevant technologies';
-    const level = this.config.level;
-
-    const map: Record<InterviewerType, string> = {
-      FAANG_STRICT:
-        `Let's start with a classic ${stack} question at the ${level} level. Given an array of integers, write a function that returns the two numbers adding up to a specific target. What's your approach and time complexity?`,
-      STARTUP_FRIENDLY:
-        `Great! Tell me about a recent ${stack} project you shipped at a ${level} level. What problem did it solve, and what would you do differently today?`,
-      HR_BEHAVIORAL:
-        `Let's begin. As a ${level} engineer working with ${stack}, tell me about a time you had a significant disagreement with a teammate. How did you handle it and what was the outcome?`
-    };
-
-    return map[this.config.interviewerType];
+  private fetchNextQuestion(): void {
+    this.interviewService.generateQuestion(this.interview.id).subscribe({
+      next: (res: GenerateQuestionResponse) => {
+        this.currentQuestionNumber = res.questionNumber;   // → 1
+        this.isLastQuestion        = res.isLastQuestion;   // false unless MAX=1
+        this.firstQuestion         = res.question;
+        this.isTyping              = false;
+        this.shouldScroll          = true;
+        setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
+      },
+      error: () => {
+        this.firstQuestion = 'Sorry, failed to load the first question. Please refresh the page.';
+        this.isTyping      = false;
+        this.shouldScroll  = true;
+      }
+    });
   }
+  sendMessage(): void {
+    const text = this.inputText.trim();
+    if (!text || !this.interviewStarted || this.timeIsUp || this.interviewComplete) return;
+
+    // 1. Show user bubble immediately
+    this.messages.push({ role: 'user', text, time: this.nowTime() });
+    this.inputText    = '';
+    this.shouldScroll = true;
+    if (this.inputRef) this.inputRef.nativeElement.style.height = 'auto';
+
+    // 2. Show typing indicator
+    const placeholder: ChatMessage = { role: 'ai', text: '...', time: '' };
+    this.messages.push(placeholder);
+    this.isTyping     = true;
+    this.shouldScroll = true;
+
+    // 3. Submit the answer to your API
+    this.interviewService.submitAnswer({
+      interviewId:     this.interview.id,   // from getInterviewById response
+      userAnswer:          text,                // user's typed answer
+    }).subscribe({
+      next: (res: SubmitAnswerResponse) => {
+        this.isTyping = false;
+
+        if (res.interviewComplete || this.isLastQuestion) {
+          // ── All 8 answers submitted ──────────────────────────────────────
+          this.interviewComplete = true;
+          clearInterval(this.timerInterval);
+
+          const idx = this.messages.indexOf(placeholder);
+          if (idx !== -1) {
+            this.messages[idx] = {
+              role: 'ai',
+              text: `✅ That's all ${this.MAX_QUESTIONS} questions! Great job, ${this.userName}. The interview is complete — you'll receive detailed feedback shortly.`,
+              time: this.nowTime()
+            };
+          }
+          this.shouldScroll = true;
+
+        } else {
+          // ── More questions remain → fetch the next one ───────────────────
+          // Replace the typing placeholder with a short bridge message (optional),
+          // then immediately fetch the next question.
+          const idx = this.messages.indexOf(placeholder);
+          if (idx !== -1) this.messages.splice(idx, 1); // remove old placeholder
+
+          this.isTyping             = true;
+          this.firstQuestionVisible = true;
+          const nextPlaceholder: ChatMessage = { role: 'ai', text: '...', time: '' };
+          this.messages.push(nextPlaceholder);
+          this.shouldScroll = true;
+
+          this.interviewService.generateQuestion(this.interview.id).subscribe({
+            next: (qRes: GenerateQuestionResponse) => {
+              this.currentQuestionNumber = qRes.questionNumber;
+              this.isLastQuestion        = qRes.isLastQuestion;
+              this.isTyping              = false;
+
+              const i = this.messages.indexOf(nextPlaceholder);
+              if (i !== -1) {
+                this.messages[i] = {
+                  role: 'ai',
+                  text: qRes.question,
+                  time: this.nowTime()
+                };
+              }
+              this.shouldScroll = true;
+              setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
+            },
+            error: () => {
+              this.isTyping = false;
+              const i = this.messages.indexOf(nextPlaceholder);
+              if (i !== -1) {
+                this.messages[i] = {
+                  role: 'ai',
+                  text: 'Sorry, failed to load the next question. Please try again.',
+                  time: this.nowTime()
+                };
+              }
+              this.shouldScroll = true;
+            }
+          });
+        }
+      },
+
+      error: () => {
+        this.isTyping = false;
+        const idx = this.messages.indexOf(placeholder);
+        if (idx !== -1) {
+          this.messages[idx] = {
+            role: 'ai',
+            text: 'Sorry, your answer could not be saved. Please try again.',
+            time: this.nowTime()
+          };
+        }
+        this.shouldScroll = true;
+      }
+    });
+  }
+
 
   private scrollToBottom(): void {
     try {
@@ -292,15 +381,4 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  private generateResponse(): string {
-    // TODO: replace with real AI call via InterviewService
-    const pool = [
-      `Good answer! Can you walk me through the time and space complexity of that approach?`,
-      `Interesting. How would you handle edge cases like empty input or duplicates?`,
-      `That's solid thinking. How would you scale this for a dataset of 10 million entries?`,
-      `Nice approach. How would you write unit tests for this?`,
-      `Great. Can you optimize it further?`
-    ];
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
 }
