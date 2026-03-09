@@ -37,4 +37,9 @@ export class InterviewService {
     const url = `${environment.apiUrl}/interviews/answers`;
     return this.http.post(url, { questionId, answer }, httpOptions);
   }
+
+  endInterview(interviewId: string): Observable<any> {
+    const url = `${environment.apiUrl}/interviews/${interviewId}/end`;
+    return this.http.post(url, {}, httpOptions);
+  }
 }

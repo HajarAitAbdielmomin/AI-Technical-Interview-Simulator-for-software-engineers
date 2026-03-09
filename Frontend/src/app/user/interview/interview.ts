@@ -5,8 +5,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import {StorageService} from '../../storage.service';
-import {InterviewService} from '../../interview.service';
+import { StorageService } from '../../storage.service';
+import { InterviewService } from '../../interview.service';
 
 export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'HR_BEHAVIORAL';
 export type InterviewLevel  = 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'ARCHITECT';
@@ -35,50 +35,51 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('chatArea') chatArea!: ElementRef<HTMLDivElement>;
   @ViewChild('inputRef') inputRef!: ElementRef<HTMLTextAreaElement>;
 
+  // ── Raw API response ──
+  // Shape: { id, techStack, interviewerType, level, status, startTime, endTime }
+  interview: any = null;
+  isLoading = true;
+
+  // ── Config ──
   config: InterviewConfig = {
-    techStack: '',
-    interviewerType: 'HR_BEHAVIORAL',
-    level: 'MID'
+    techStack:       '',
+    interviewerType: 'FAANG_STRICT',
+    level:           'MID'
   };
 
-  // ── User (replace with AuthService) ──
-  userName: string = '';
-  userInitials: string = '';
+  // ── User ──
+  userName     = '';
+  userInitials = '';
 
   // ── Interviewer personas ──
   private readonly personas: Record<InterviewerType, { name: string; initials: string; style: string; role: string }> = {
     FAANG_STRICT: {
-      name:     'Dr. David Park',
-      initials: 'DP',
-      style:    'rigorous FAANG-style, algorithm focused',
+      name:     'Dr. Marcus Reid',
+      initials: 'MR',
+      style:    'rigorous FAANG-style, algorithm-focused',
       role:     'Senior Staff Engineer · FAANG'
     },
     STARTUP_FRIENDLY: {
-      name:     'Noah Bennett',
-      initials: 'NB',
+      name:     'Sofia Chen',
+      initials: 'SC',
       style:    'startup-friendly, practical & pragmatic',
       role:     'CTO · Series-A Startup'
     },
     HR_BEHAVIORAL: {
-      name:     'Jessica Turner',
-      initials: 'JT',
-      style:    'HR behavioral, STAR method focused',
+      name:     'James Okafor',
+      initials: 'JO',
+      style:    'HR behavioral, STAR-method focused',
       role:     'Head of Talent · Tech Division'
     }
   };
 
-  private getPersona() {
-    return this.personas[this.config.interviewerType];
-  }
+  get interviewerName():      string { return this.personas[this.config.interviewerType].name; }
+  get interviewerInitials():  string { return this.personas[this.config.interviewerType].initials; }
+  get interviewerStyleDesc(): string { return this.personas[this.config.interviewerType].style; }
+  get interviewerRoleLabel(): string { return this.personas[this.config.interviewerType].role; }
 
-  get interviewerName():      string { return this.getPersona().name; }
-  get interviewerInitials():  string { return this.getPersona().initials; }
-  get interviewerStyleDesc(): string { return this.getPersona().style; }
-  get interviewerRoleLabel(): string { return this.getPersona().role; }
-
-  // ── Timer state ── 5 minutes = 300 seconds ──
-  private readonly DURATION = 300;
-  private secondsLeft       = this.DURATION;
+  // ── Timer ──
+  private secondsLeft  = 300; // overridden by endTime − now
   private timerInterval: any;
 
   get remainingTime(): string {
@@ -102,16 +103,12 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
   private shouldScroll = false;
 
-  private readonly firstQuestions: Record<InterviewerType, string> = {
-    FAANG_STRICT:
-      `Let's start with a classic. Given an array of integers, write a function that returns the two numbers that add up to a specific target. What's your approach and what's the time complexity?`,
-    STARTUP_FRIENDLY:
-      `Great! Tell me about a recent project you shipped. What was the tech stack, what problem did it solve, and what would you do differently if you rebuilt it today?`,
-    HR_BEHAVIORAL:
-      `Let's begin. Tell me about a time you had a significant disagreement with a teammate or manager. How did you handle it, and what was the outcome?`
-  };
-
-  constructor(private router: Router, private route: ActivatedRoute, private storageService: StorageService, private interviewService: InterviewService) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private storageService: StorageService,
+    private interviewService: InterviewService
+  ) {}
 
   ngOnInit(): void {
     const token = this.storageService.getToken();
@@ -119,22 +116,55 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
       setTimeout(() => this.router.navigate(['/auth/login']), 0);
       return;
     }
-    const user = this.storageService.getUser();
-    if (user?.username) {
-      this.userName = user.username;
-      this.userInitials = user.username.charAt(0).toUpperCase();
-    }
+
+    const user        = this.storageService.getUser();
+    this.userName     = user?.username ?? user?.name ?? 'User';
+    this.userInitials = this.userName.charAt(0).toUpperCase();
+
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.interviewService.getInterviewById(params['id']).subscribe(interview => {
-          this.config = {
-            techStack:       interview.techStack,
-            interviewerType: interview.interviewerType,
-            level:           interview.level
-          };
+        this.interviewService.getInterviewById(params['id']).subscribe({
+          next: (interview: any) => {
+            this.interview = interview;
+            this.applyInterviewData(interview);
+            this.isLoading = false;
+            console.log('interview loaded', interview);
+          },
+          error: (err: any) => {
+            console.error('Failed to load interview', err);
+            this.isLoading = false;
+          }
         });
       }
     });
+  }
+
+  // ─────────────────────────────────────────
+  // Map exact API fields to component state
+  // API shape: { id, techStack, interviewerType, level, status, startTime, endTime }
+  // ─────────────────────────────────────────
+  private applyInterviewData(data: any): void {
+
+    // techStack — API returns plain string e.g. "K8"
+    this.config.techStack = data.techStack ?? '';
+
+    // interviewerType — API returns "HR_BEHAVIORAL" | "FAANG_STRICT" | "STARTUP_FRIENDLY"
+    const validTypes: InterviewerType[] = ['FAANG_STRICT', 'STARTUP_FRIENDLY', 'HR_BEHAVIORAL'];
+    const rawType = (data.interviewerType ?? 'FAANG_STRICT') as InterviewerType;
+    this.config.interviewerType = validTypes.includes(rawType) ? rawType : 'FAANG_STRICT';
+
+    // level — API returns "JUNIOR" | "MID" | "SENIOR" etc.
+    const validLevels: InterviewLevel[] = ['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'ARCHITECT'];
+    const rawLevel = (data.level ?? 'MID') as InterviewLevel;
+    this.config.level = validLevels.includes(rawLevel) ? rawLevel : 'MID';
+
+    // Duration — compute from endTime − now (API provides ISO strings)
+    // e.g. startTime: "2026-03-09T12:15:17.912551", endTime: "2026-03-09T12:45:17.912551"
+    if (data.endTime) {
+      const msLeft = new Date(data.endTime).getTime() - Date.now();
+      // If endTime is already past (resumed session), fall back to 5 min
+      this.secondsLeft = msLeft > 0 ? Math.floor(msLeft / 1000) : 300;
+    }
   }
 
   ngAfterViewChecked(): void {
@@ -160,14 +190,14 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     this.startCountdown();
 
     setTimeout(() => {
-      this.firstQuestion = this.firstQuestions[this.config.interviewerType];
+      this.firstQuestion = this.buildFirstQuestion();
       this.isTyping      = false;
       this.shouldScroll  = true;
       setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
     }, 2200);
   }
 
-  onNotReady(): void { /* user asked for a moment — do nothing */ }
+  onNotReady(): void {}
 
   // ── Send message ──
   sendMessage(): void {
@@ -180,7 +210,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
     if (this.inputRef) this.inputRef.nativeElement.style.height = 'auto';
 
-    // Simulate AI response
     setTimeout(() => {
       const placeholder: ChatMessage = { role: 'ai', text: '...', time: '' };
       this.messages.push(placeholder);
@@ -225,7 +254,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         this.secondsLeft--;
       } else {
         clearInterval(this.timerInterval);
-        // Auto-add a time's up message from interviewer
         this.messages.push({
           role: 'ai',
           text: `⏱️ Time's up, ${this.userName}! That wraps up our session. Thank you for your answers — I'll have feedback for you shortly.`,
@@ -234,6 +262,23 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         this.shouldScroll = true;
       }
     }, 1000);
+  }
+
+  // ── Build opening question from interviewerType + techStack + level ──
+  private buildFirstQuestion(): string {
+    const stack = this.config.techStack || 'the relevant technologies';
+    const level = this.config.level;
+
+    const map: Record<InterviewerType, string> = {
+      FAANG_STRICT:
+        `Let's start with a classic ${stack} question at the ${level} level. Given an array of integers, write a function that returns the two numbers adding up to a specific target. What's your approach and time complexity?`,
+      STARTUP_FRIENDLY:
+        `Great! Tell me about a recent ${stack} project you shipped at a ${level} level. What problem did it solve, and what would you do differently today?`,
+      HR_BEHAVIORAL:
+        `Let's begin. As a ${level} engineer working with ${stack}, tell me about a time you had a significant disagreement with a teammate. How did you handle it and what was the outcome?`
+    };
+
+    return map[this.config.interviewerType];
   }
 
   private scrollToBottom(): void {
@@ -248,7 +293,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private generateResponse(): string {
-    // Placeholder — wire to your AI/backend service
+    // TODO: replace with real AI call via InterviewService
     const pool = [
       `Good answer! Can you walk me through the time and space complexity of that approach?`,
       `Interesting. How would you handle edge cases like empty input or duplicates?`,
