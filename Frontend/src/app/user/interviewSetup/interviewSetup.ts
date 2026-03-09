@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -101,6 +101,12 @@ export class InterviewSetup {
   nextStep(): void { this.currentStep < 3 ? this.currentStep++ : this.launchInterview(); }
   prevStep(): void { if (this.currentStep > 1) this.currentStep--; }
 
+ ngOnInit(){
+   if (!this.storageService.getToken()) {
+     this.router.navigate(['/auth/login']);
+     return;
+   }
+ }
   launchInterview(): void {
     const config: InterviewConfig = {
       techStack:      this.selectedStack!,
