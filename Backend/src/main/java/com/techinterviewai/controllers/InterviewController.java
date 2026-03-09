@@ -1,8 +1,8 @@
 package com.techinterviewai.controllers;
 
 import com.techinterviewai.dto.InterviewDto;
+import com.techinterviewai.dto.InterviewDetailsDto;
 import com.techinterviewai.dto.QuestionAnswerDto;
-import com.techinterviewai.models.Interview;
 import com.techinterviewai.models.QuestionAnswer;
 import com.techinterviewai.services.implementation.InterviewServiceImpl;
 import jakarta.validation.Valid;
@@ -40,9 +40,8 @@ public class InterviewController {
     public ResponseEntity<?> nextQuestion(@PathVariable Long id) {
         interviewService.validateNoPendingAnswer(id);
         String question = interviewService.getNextQuestion(id);
-        Interview interview = interviewService.getInterviewById(id);
 
-        int questionNumber = interview.getQuestionAnswer().size();
+        int questionNumber = interviewService.getQuestionCount(id);
         boolean isLast = questionNumber >= maxQuestions;
 
         return ResponseEntity.ok(Map.of(

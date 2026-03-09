@@ -5,12 +5,14 @@ import com.techinterviewai.dto.SubmitAnswerResponseDto;
 import com.techinterviewai.dto.NextQuestionResponseDto;
 import com.techinterviewai.dto.QuestionAnswerDto;
 import com.techinterviewai.dto.InterviewDto;
+import com.techinterviewai.dto.InterviewDetailsDto;
 import com.techinterviewai.enums.Status;
 import com.techinterviewai.exceptions.PendingAnswerException;
 import com.techinterviewai.exceptions.QuestionsOutOfBoundException;
 import com.techinterviewai.exceptions.UserNotFoundException;
 import com.techinterviewai.mappers.QuestionAnswerMapper;
 import com.techinterviewai.mappers.InterviewMapper;
+import com.techinterviewai.mappers.InterviewDetailsMapper;
 import com.techinterviewai.models.Interview;
 import com.techinterviewai.models.QuestionAnswer;
 import com.techinterviewai.models.User;
@@ -34,6 +36,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final QuestionAnswerMapper questionAnswerMapper;
     private final InterviewRepository interviewRepository;
     private final InterviewMapper interviewMapper;
+    private final InterviewDetailsMapper interviewDetailsMapper;
     private final UserRepository userRepository;
     private final QuestionAnswerRepository questionAnswerRepository;
     private final QuestionGenerationServiceImpl questionGenerationService;
@@ -63,7 +66,7 @@ public class InterviewServiceImpl implements InterviewService {
     }
     @Override
     public void validateNoPendingAnswer(Long interviewId) {
-        Interview interview = getInterviewById(interviewId);
+        Interview interview = getInterviewEntity(interviewId);
         boolean hasPending = interview.getQuestionAnswer().stream()
                 .anyMatch(qa -> qa.getUserAnswer() == null || qa.getUserAnswer().isBlank());
         if (hasPending) {
@@ -77,7 +80,7 @@ public class InterviewServiceImpl implements InterviewService {
     @Override
     @Transactional
     public QuestionAnswer submitAnswer(QuestionAnswerDto questionAnswerDto) {
-        Interview interview = getInterviewById(questionAnswerDto.getInterviewId());
+        Interview interview = getInterviewEntity(questionAnswerDto.getInterviewId());
 
         QuestionAnswer pending = interview.getQuestionAnswer().stream()
                 .filter(qa -> qa.getUserAnswer() == null || qa.getUserAnswer().isBlank())
@@ -91,17 +94,22 @@ public class InterviewServiceImpl implements InterviewService {
 
     }
 
-    @Override
-    public Interview getInterviewById(Long id) {
+    private Interview getInterviewEntity(Long id) {
         return interviewRepository.findById(id).orElseThrow(
                 () -> new UserNotFoundException("Interview not found with id: " + id)
         );
     }
 
     @Override
+    public InterviewDetailsDto getInterviewById(Long id) {
+        Interview interview = getInterviewEntity(id);
+        return interviewDetailsMapper.toDto(interview);
+    }
+
+    @Override
     @Transactional
     public String getNextQuestion(Long interviewId) {
-        Interview interview = getInterviewById(interviewId);
+        Interview interview = getInterviewEntity(interviewId);
 
         int questionNumber = interview.getQuestionAnswer().size() + 1;
 
@@ -128,7 +136,7 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     public boolean isComplete(Long interviewId) {
-        Interview interview = getInterviewById(interviewId);
+        Interview interview = getInterviewEntity(interviewId);
         long answered = interview.getQuestionAnswer().stream()
                 .filter(qa -> qa.getUserAnswer() != null && !qa.getUserAnswer().isBlank())
                 .count();
@@ -137,7 +145,7 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     public boolean endInterview(Long interviewId) {
-        Interview interview = getInterviewById(interviewId);
+        Interview interview = getInterviewEntity(interviewId);
         interview.setStatus(Status.COMPLETED);
         interview.setEndTime(LocalDateTime.now());
         interviewRepository.save(interview);
@@ -154,7 +162,7 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     public ResumeInterviewResponseDto resumeInterview(Long interviewId) {
-        Interview interview = getInterviewById(interviewId);
+        Interview interview = getInterviewEntity(interviewId);
         
         long remainingSeconds = getRemainingTime(interview.getStartTime());
         
@@ -169,5 +177,11 @@ public class InterviewServiceImpl implements InterviewService {
             maxQuestions,
             interview.getQuestionAnswer()
         );
+    }
+
+    @Override
+    public int getQuestionCount(Long interviewId) {
+        Interview interview = getInterviewEntity(interviewId);
+        return interview.getQuestionAnswer().size();
     }
 }
