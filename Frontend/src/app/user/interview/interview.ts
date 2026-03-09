@@ -3,15 +3,16 @@ import {
   ViewChild, ElementRef, AfterViewChecked
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import {StorageService} from '../../storage.service';
+import {InterviewService} from '../../interview.service';
 
 export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'HR_BEHAVIORAL';
 export type InterviewLevel  = 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'ARCHITECT';
 
 export interface InterviewConfig {
-  techStack:       string[];
+  techStack:       string;
   interviewerType: InterviewerType;
   level:           InterviewLevel;
 }
@@ -34,43 +35,46 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('chatArea') chatArea!: ElementRef<HTMLDivElement>;
   @ViewChild('inputRef') inputRef!: ElementRef<HTMLTextAreaElement>;
 
-  // ── Config (from router state) ──
   config: InterviewConfig = {
-    techStack:       ['Angular', 'TypeScript'],
-    interviewerType: 'FAANG_STRICT',
-    level:           'MID'
+    techStack: '',
+    interviewerType: 'HR_BEHAVIORAL',
+    level: 'MID'
   };
 
   // ── User (replace with AuthService) ──
-  userName     = 'Alex';
-  userInitials = 'AC';
+  userName: string = '';
+  userInitials: string = '';
 
   // ── Interviewer personas ──
   private readonly personas: Record<InterviewerType, { name: string; initials: string; style: string; role: string }> = {
     FAANG_STRICT: {
-      name:     'Dr. Marcus Reid',
-      initials: 'MR',
-      style:    'rigorous FAANG-style, algorithm-focused',
+      name:     'Dr. David Park',
+      initials: 'DP',
+      style:    'rigorous FAANG-style, algorithm focused',
       role:     'Senior Staff Engineer · FAANG'
     },
     STARTUP_FRIENDLY: {
-      name:     'Sofia Chen',
-      initials: 'SC',
+      name:     'Noah Bennett',
+      initials: 'NB',
       style:    'startup-friendly, practical & pragmatic',
       role:     'CTO · Series-A Startup'
     },
     HR_BEHAVIORAL: {
-      name:     'James Okafor',
-      initials: 'JO',
-      style:    'HR behavioral, STAR-method focused',
+      name:     'Jessica Turner',
+      initials: 'JT',
+      style:    'HR behavioral, STAR method focused',
       role:     'Head of Talent · Tech Division'
     }
   };
 
-  get interviewerName():      string { return this.personas[this.config.interviewerType].name; }
-  get interviewerInitials():  string { return this.personas[this.config.interviewerType].initials; }
-  get interviewerStyleDesc(): string { return this.personas[this.config.interviewerType].style; }
-  get interviewerRoleLabel(): string { return this.personas[this.config.interviewerType].role; }
+  private getPersona() {
+    return this.personas[this.config.interviewerType];
+  }
+
+  get interviewerName():      string { return this.getPersona().name; }
+  get interviewerInitials():  string { return this.getPersona().initials; }
+  get interviewerStyleDesc(): string { return this.getPersona().style; }
+  get interviewerRoleLabel(): string { return this.getPersona().role; }
 
   // ── Timer state ── 5 minutes = 300 seconds ──
   private readonly DURATION = 300;
@@ -107,13 +111,30 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
       `Let's begin. Tell me about a time you had a significant disagreement with a teammate or manager. How did you handle it, and what was the outcome?`
   };
 
-  constructor(private router: Router, private storageService: StorageService) {}
+  constructor(private router: Router, private route: ActivatedRoute, private storageService: StorageService, private interviewService: InterviewService) {}
 
   ngOnInit(): void {
-    const nav = this.router.getCurrentNavigation();
-    if (nav?.extras?.state?.['config']) {
-      this.config = nav.extras.state['config'] as InterviewConfig;
+    const token = this.storageService.getToken();
+    if (!token) {
+      setTimeout(() => this.router.navigate(['/auth/login']), 0);
+      return;
     }
+    const user = this.storageService.getUser();
+    if (user?.username) {
+      this.userName = user.username;
+      this.userInitials = user.username.charAt(0).toUpperCase();
+    }
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.interviewService.getInterviewById(params['id']).subscribe(interview => {
+          this.config = {
+            techStack:       interview.techStack,
+            interviewerType: interview.interviewerType,
+            level:           interview.level
+          };
+        });
+      }
+    });
   }
 
   ngAfterViewChecked(): void {

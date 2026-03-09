@@ -115,9 +115,9 @@ export class InterviewSetup implements OnInit {
       level:          this.selectedLevel!.value,
       userId:          this.storageService.getUser().id,
     };
-    this.router.navigate(['/user/interview', 0])
+   // this.router.navigate(['/user/interview', 0])
     //console.log('Launching interview with config:', config);
-    /*this.interviewService.createInterview(config).subscribe(
+    this.interviewService.createInterview(config).subscribe(
       {
         next: (res) => {
           //console.log('Interview created:', res);
@@ -125,6 +125,6 @@ export class InterviewSetup implements OnInit {
         },
         error: (err) => console.error('Interview creation error:', err)
       }
-    );*/
+    );
   }
 }

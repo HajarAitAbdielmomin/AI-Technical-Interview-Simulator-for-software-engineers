@@ -56,9 +56,7 @@
           <p>Hi, <span class="hl-name">{{ userName }}</span>! 👋 I'm <span class="hl-int">{{ interviewerName }}</span>, your interviewer today.</p>
           <p>
             We'll be covering
-            <ng-container *ngFor="let t of config.techStack; let last = last">
-              <span class="hl-stack">{{ t }}</span><ng-container *ngIf="!last">, </ng-container>
-            </ng-container>
+            <span class="hl-stack">{{ config.techStack }}</span>
             at the <strong>{{ config.level }}</strong> level.
           </p>
           <p>This session follows a <strong>{{ interviewerStyleDesc }}</strong> format. I'll ask questions, review your answers, and give feedback at the end.</p>
