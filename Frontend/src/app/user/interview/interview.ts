@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../storage.service';
 import { InterviewService } from '../../interview.service';
 
-export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'HR_BEHAVIORAL';
+export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'JUNIOR_FRIENDLY';
 export type InterviewLevel  = 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'ARCHITECT';
 
 export interface InterviewConfig {
@@ -21,6 +21,7 @@ export interface ChatMessage {
   role: 'ai' | 'user';
   text: string;
   time: string;
+  typing?: boolean;
 }
 
 export interface GenerateQuestionResponse {
@@ -62,9 +63,9 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   userInitials = '';
 
   private readonly personas: Record<InterviewerType, { name: string; initials: string; style: string; role: string }> = {
-    FAANG_STRICT:     { name: 'Dr. Marcus Reid', initials: 'MR', style: 'rigorous FAANG-style, algorithm-focused',  role: 'Senior Staff Engineer · FAANG' },
-    STARTUP_FRIENDLY: { name: 'Sofia Chen',      initials: 'SC', style: 'startup-friendly, practical & pragmatic', role: 'CTO · Series-A Startup'          },
-    HR_BEHAVIORAL:    { name: 'James Okafor',    initials: 'JO', style: 'HR behavioral, STAR-method focused',       role: 'Head of Talent · Tech Division'   }
+    FAANG_STRICT:     { name: 'Dr. Alex Reid', initials: 'AR', style: 'rigorous FAANG-style, algorithm-focused',  role: 'Senior Staff Engineer · FAANG' },
+    STARTUP_FRIENDLY: { name: 'Jordan Chen',      initials: 'JC', style: 'startup-friendly, practical & pragmatic', role: 'CTO · Series-A Startup'          },
+    JUNIOR_FRIENDLY:  { name: 'Sam Rivera',     initials: 'SR', style: 'junior-friendly, supportive & clear',     role: 'Senior Engineer · Mentorship'     }
   };
 
   get interviewerName():      string { return this.personas[this.config.interviewerType]?.name     ?? ''; }
@@ -138,7 +139,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private applyInterviewData(data: any): void {
-    const validTypes:  InterviewerType[] = ['FAANG_STRICT', 'STARTUP_FRIENDLY', 'HR_BEHAVIORAL'];
+    const validTypes:  InterviewerType[] = ['FAANG_STRICT', 'STARTUP_FRIENDLY', 'JUNIOR_FRIENDLY'];
     const validLevels: InterviewLevel[]  = ['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'ARCHITECT'];
 
     this.config = {
@@ -248,7 +249,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     this.shouldScroll = true;
     if (this.inputRef) this.inputRef.nativeElement.style.height = 'auto';
 
-    const placeholder: ChatMessage = { role: 'ai', text: '...', time: '' };
+    const placeholder: ChatMessage = { role: 'ai', text: '', time: '', typing: true };
     this.messages.push(placeholder);
     this.isTyping     = true;
     this.shouldScroll = true;
@@ -284,7 +285,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
           this.isTyping             = true;
           this.firstQuestionVisible = true;
-          const nextPlaceholder: ChatMessage = { role: 'ai', text: '...', time: '' };
+          const nextPlaceholder: ChatMessage = { role: 'ai', text: '', time: '', typing: true };
           this.messages.push(nextPlaceholder);
           this.shouldScroll = true;
 

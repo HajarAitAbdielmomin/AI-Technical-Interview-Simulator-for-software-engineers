@@ -159,10 +159,22 @@
         <div class="msg-avatar" *ngIf="msg.role==='ai'"><span>{{ interviewerInitials }}</span></div>
         <div class="msg-body" [class.user-body]="msg.role==='user'">
           <div class="msg-sender" *ngIf="msg.role==='ai'">{{ interviewerName }}</div>
-          <div class="bubble" [class.ai-bubble]="msg.role==='ai'" [class.user-bubble]="msg.role==='user'">
+
+          <!-- Animated typing indicator -->
+          <div class="bubble ai-bubble typing-bubble" *ngIf="msg.typing">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+
+          <!-- Normal message bubble -->
+          <div class="bubble" *ngIf="!msg.typing"
+               [class.ai-bubble]="msg.role==='ai'"
+               [class.user-bubble]="msg.role==='user'">
             <p>{{ msg.text }}</p>
           </div>
-          <div class="msg-time" [class.right]="msg.role==='user'">{{ msg.time }}</div>
+
+          <div class="msg-time" [class.right]="msg.role==='user'" *ngIf="!msg.typing">{{ msg.time }}</div>
         </div>
         <div class="msg-avatar user-av" *ngIf="msg.role==='user'"><span>{{ userInitials }}</span></div>
       </div>

@@ -6,7 +6,7 @@ import {AuthService} from '../../auth.service';
 import {StorageService} from '../../storage.service';
 import {InterviewService} from '../../interview.service';
 
-export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'HR_BEHAVIORAL';
+export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'JUNIOR_FRIENDLY';
 export type InterviewLevel   = 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'ARCHITECT';
 
 export interface InterviewConfig {
@@ -51,7 +51,7 @@ export class InterviewSetup implements OnInit {
   interviewers: InterviewerOption[] = [
     { type: 'FAANG_STRICT',      emoji: '🏢', title: 'FAANG Strict',      badge: 'Intense',    badgeClass: 'badge-strict',   desc: 'Google-tier rigor. Deep algorithmic challenges, system design, and complexity analysis.',   selected: false },
     { type: 'STARTUP_FRIENDLY',  emoji: '🚀', title: 'Startup Friendly',  badge: 'Relaxed',    badgeClass: 'badge-friendly', desc: 'Practical focus. Real-world problem solving and broad full-stack knowledge.',                  selected: false },
-    { type: 'HR_BEHAVIORAL',     emoji: '🤝', title: 'HR Behavioral',     badge: 'Soft Skills', badgeClass: 'badge-hr',      desc: 'Competency-based. STAR method, teamwork scenarios, conflict resolution and culture fit.',    selected: false },
+    { type: 'JUNIOR_FRIENDLY',    emoji: '🤝', title: 'Junior Friendly',    badge: 'Beginner',   badgeClass: 'badge-junior',  desc: 'Beginner-focused. Fundamentals, clear explanations, and supportive guidance.',                selected: false },
   ];
 
   levels: LevelOption[] = [

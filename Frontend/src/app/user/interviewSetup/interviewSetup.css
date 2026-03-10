@@ -245,7 +245,7 @@
 .int-badge { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; padding: 3px 10px; border-radius: 20px; }
 .badge-strict   { background: rgba(252,101,126,.12); color: var(--coral);  border: 1px solid rgba(252,101,126,.2); }
 .badge-friendly { background: rgba(74,222,128,.1);   color: #4ade80;       border: 1px solid rgba(74,222,128,.2); }
-.badge-hr       { background: rgba(147,197,253,.1);  color: #93c5fd;       border: 1px solid rgba(147,197,253,.2); }
+.badge-junior   { background: rgba(147,197,253,.1);  color: #93c5fd;       border: 1px solid rgba(147,197,253,.2); }
 
 .int-desc { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
 .interviewer-card.selected .int-desc { color: var(--text-soft); }
