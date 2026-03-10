@@ -43,4 +43,10 @@ public class AIConfig {
 
         return RestClient.builder().requestFactory(factory);
     }
+
+    @Bean
+    @Qualifier("evaluationChatClient")
+    public ChatClient evaluationChatClient(OpenAiChatModel openAiChatModel) {
+        return ChatClient.builder(openAiChatModel).build();
+    }
 }

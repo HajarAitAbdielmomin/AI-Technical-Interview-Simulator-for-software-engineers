@@ -1,11 +1,6 @@
 package com.techinterviewai.services;
 
-import com.techinterviewai.dto.ResumeInterviewResponseDto;
-import com.techinterviewai.dto.QuestionAnswerDto;
-import com.techinterviewai.dto.SubmitAnswerResponseDto;
-import com.techinterviewai.dto.NextQuestionResponseDto;
-import com.techinterviewai.dto.InterviewDto;
-import com.techinterviewai.dto.InterviewDetailsDto;
+import com.techinterviewai.dto.*;
 import com.techinterviewai.models.QuestionAnswer;
 
 import java.time.LocalDateTime;
@@ -22,4 +17,5 @@ public interface InterviewService {
     Long getRemainingTime(LocalDateTime startTime);
     ResumeInterviewResponseDto resumeInterview(Long interviewId);
     int getQuestionCount(Long interviewId);
+    FeedbackResponse getFeedback(Long interviewId);
 }

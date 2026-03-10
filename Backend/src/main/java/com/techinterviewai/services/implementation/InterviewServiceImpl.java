@@ -1,15 +1,12 @@
 package com.techinterviewai.services.implementation;
 
-import com.techinterviewai.dto.ResumeInterviewResponseDto;
-import com.techinterviewai.dto.SubmitAnswerResponseDto;
-import com.techinterviewai.dto.NextQuestionResponseDto;
-import com.techinterviewai.dto.QuestionAnswerDto;
-import com.techinterviewai.dto.InterviewDto;
-import com.techinterviewai.dto.InterviewDetailsDto;
+import com.techinterviewai.dto.*;
 import com.techinterviewai.enums.Status;
+import com.techinterviewai.exceptions.FeedbackNotAvailableException;
 import com.techinterviewai.exceptions.PendingAnswerException;
 import com.techinterviewai.exceptions.QuestionsOutOfBoundException;
 import com.techinterviewai.exceptions.UserNotFoundException;
+import com.techinterviewai.mappers.FeedbackMapper;
 import com.techinterviewai.mappers.QuestionAnswerMapper;
 import com.techinterviewai.mappers.InterviewMapper;
 import com.techinterviewai.mappers.InterviewDetailsMapper;
@@ -40,6 +37,8 @@ public class InterviewServiceImpl implements InterviewService {
     private final UserRepository userRepository;
     private final QuestionAnswerRepository questionAnswerRepository;
     private final QuestionGenerationServiceImpl questionGenerationService;
+    private final FeedbackMapper feedbackMapper;
+    private final EvaluationServiceImpl evaluationService;
 
     @Value("${app.interview.max-questions:8}")
     private int maxQuestions;
@@ -76,6 +75,16 @@ public class InterviewServiceImpl implements InterviewService {
         }
     }
 
+    @Override
+    public FeedbackResponse getFeedback(Long interviewId) {
+        Interview interview = getInterviewEntity(interviewId);
+
+        if (interview.getFeedback() == null) {
+            throw new FeedbackNotAvailableException("Feedback not yet available for interview: " + interviewId);
+        }
+
+        return feedbackMapper.toDto(interview.getFeedback());
+    }
 
     @Override
     @Transactional
@@ -144,11 +153,14 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     @Override
+    @Transactional
     public boolean endInterview(Long interviewId) {
         Interview interview = getInterviewEntity(interviewId);
         interview.setStatus(Status.COMPLETED);
         interview.setEndTime(LocalDateTime.now());
         interviewRepository.save(interview);
+        // Pass only the ID — no entity crossing service boundaries
+        evaluationService.evaluateInterview(interviewId);
         return true;
     }
 
@@ -184,4 +196,6 @@ public class InterviewServiceImpl implements InterviewService {
         Interview interview = getInterviewEntity(interviewId);
         return interview.getQuestionAnswer().size();
     }
+
+
 }
