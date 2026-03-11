@@ -54,7 +54,7 @@ public class EvaluationServiceImpl implements EvaluationService {
                 )))
                 .options(OpenAiChatOptions.builder()
                         .withModel("openai-gpt-oss-120b")
-                        .withTemperature(0.2)
+                        .withTemperature(0.4)
                         .build())
                 .call()
                 .content();

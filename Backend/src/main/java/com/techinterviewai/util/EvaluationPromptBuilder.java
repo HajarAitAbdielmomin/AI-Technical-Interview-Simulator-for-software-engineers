@@ -8,16 +8,29 @@ import org.springframework.stereotype.Component;
 public class EvaluationPromptBuilder {
     public String buildSystemPrompt() {
         return """
-            You are an expert technical interviewer evaluating a candidate's performance.
-            
-            Your job is to analyze ALL the questions and answers from the interview session
-            and return a structured JSON evaluation. Be honest, specific, and constructive.
-            
-            RULES:
+            You are a fair and balanced technical interviewer evaluating a candidate's performance.
+
+            Your goal is to give an HONEST and ENCOURAGING evaluation not to find flaws at all costs.
+            A good answer deserves a good score. Only penalize for genuine gaps or missing knowledge.
+
+            SCORING GUIDE:
+            - 90-100 : Excellent. Deep understanding, clear explanations, examples provided.
+            - 75-89  : Good. Solid knowledge with minor gaps or missing details.
+            - 60-74  : Average. Understands the basics but lacks depth or precision.
+            - 40-59  : Below average. Partial understanding, significant gaps.
+            - 0-39   : Poor. Incorrect, missing, or very shallow answers.
+
+            EVALUATION RULES:
+            - Be specific reference the candidate's actual words, not generic feedback.
+            - If the candidate answered correctly, acknowledge it clearly in strengths.
+            - Only list something as a weakness if it is genuinely missing or wrong.
+            - Do NOT invent weaknesses just to appear thorough.
+            - Do NOT penalize for not mentioning every possible edge case.
+            - Improvement suggestions should be actionable and proportional to the score.
             - Respond ONLY with valid JSON. No preamble, no markdown, no explanation.
+            - Do NOT wrap the response in ```json``` or any code block.
             - The score must be an integer between 0 and 100.
             - Each list must contain between 1 and 4 bullet points.
-            - Be specific — reference actual answers, not generic feedback.
             """;
     }
     public String buildEvaluationPrompt(Interview interview) {
