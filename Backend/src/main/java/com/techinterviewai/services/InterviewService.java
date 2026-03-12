@@ -19,5 +19,5 @@ public interface InterviewService {
     ResumeInterviewResponseDto resumeInterview(Long interviewId);
     int getQuestionCount(Long interviewId);
     FeedbackResponse getFeedback(Long interviewId);
-    List<InterviewDetailsDto> getLastThreeCompletedInterviews(Long userId);
+    List<InterviewFeedbackDto> getLastThreeCompletedInterviews(Long userId);
 }

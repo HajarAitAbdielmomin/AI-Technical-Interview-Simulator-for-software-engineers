@@ -40,6 +40,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final QuestionGenerationServiceImpl questionGenerationService;
     private final FeedbackMapper feedbackMapper;
     private final EvaluationServiceImpl evaluationService;
+    private final InterviewFeedbackMapper interviewFeedbackMapper;
 
     @Value("${app.interview.max-questions:8}")
     private int maxQuestions;
@@ -199,10 +200,10 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     @Override
-    public List<InterviewDetailsDto> getLastThreeCompletedInterviews(Long userId) {
+    public List<InterviewFeedbackDto> getLastThreeCompletedInterviews(Long userId) {
         return interviewRepository.findTop3ByUserIdAndStatusOrderByEndTimeDesc(userId, Status.COMPLETED)
                 .stream()
-                .map(interviewDetailsMapper::toDto)
+                .map(interviewFeedbackMapper::toDto)
                 .toList();
     }
 }
