@@ -39,7 +39,7 @@ export class Dashboard implements OnInit {
     private storageService:  StorageService,
     private authService:     AuthService,
     private feedbackService: FeedbackService,
-    private cdr:             ChangeDetectorRef   // ← added
+    private cdr:             ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
