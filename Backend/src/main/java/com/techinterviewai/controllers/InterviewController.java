@@ -76,4 +76,9 @@ public class InterviewController {
     public ResponseEntity<?> resumeInterview(@PathVariable Long id) {
         return ResponseEntity.ok(interviewService.resumeInterview(id));
     }
+
+    @GetMapping("user/{id}")
+    public ResponseEntity<?> getLastThreeUserInterviews(@PathVariable Long id) {
+        return ResponseEntity.ok(interviewService.getLastThreeCompletedInterviews(id));
+    }
 }

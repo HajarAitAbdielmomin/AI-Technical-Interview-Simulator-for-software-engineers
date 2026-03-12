@@ -4,6 +4,7 @@ import com.techinterviewai.dto.*;
 import com.techinterviewai.models.QuestionAnswer;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface InterviewService {
@@ -18,4 +19,5 @@ public interface InterviewService {
     ResumeInterviewResponseDto resumeInterview(Long interviewId);
     int getQuestionCount(Long interviewId);
     FeedbackResponse getFeedback(Long interviewId);
+    List<InterviewDetailsDto> getLastThreeCompletedInterviews(Long userId);
 }

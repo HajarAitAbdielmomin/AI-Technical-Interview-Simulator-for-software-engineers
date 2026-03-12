@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -197,5 +198,11 @@ public class InterviewServiceImpl implements InterviewService {
         return interview.getQuestionAnswer().size();
     }
 
-
+    @Override
+    public List<InterviewDetailsDto> getLastThreeCompletedInterviews(Long userId) {
+        return interviewRepository.findTop3ByUserIdAndStatusOrderByEndTimeDesc(userId, Status.COMPLETED)
+                .stream()
+                .map(interviewDetailsMapper::toDto)
+                .toList();
+    }
 }
