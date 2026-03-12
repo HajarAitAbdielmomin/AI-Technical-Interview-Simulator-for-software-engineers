@@ -30,6 +30,8 @@ export class Dashboard implements OnInit {
 
   // ── Recent Performances ──
   recentPerformances: Performance[] = [];
+
+  // user details
   userInfo: any;
 
   constructor(
@@ -48,16 +50,23 @@ export class Dashboard implements OnInit {
     }
     this.userInfo = this.storageService.getUser();
 
-    this.feedbackService.getUserStatistics(this.userInfo.id).subscribe({
-      next: (res) => {
-        this.avgScore        = Math.round(res[0]) ?? 0;
-        this.bestScore       = Math.round(res[1]) ?? 0;
-        this.totalInterviews = res[2] ?? 0;
-        this.cdr.detectChanges();   // ← force re-render
-      },
-      error: (err) => console.error('Error fetching statistics:', err)
-    });
+    this.getStatistics(this.userInfo.id);
+    this.getLastThreeInterviews(this.userInfo.id);
 
+  }
+
+ private getStatistics(id: string): void {
+   this.feedbackService.getUserStatistics(id).subscribe({
+     next: (res) => {
+       this.avgScore        = Math.round(res[0]) ?? 0;
+       this.bestScore       = Math.round(res[1]) ?? 0;
+       this.totalInterviews = res[2] ?? 0;
+       this.cdr.detectChanges();   // ← force re-render
+     },
+     error: (err) => console.error('Error fetching statistics:', err)
+   });
+  }
+  private getLastThreeInterviews(id: string) : void {
     this.feedbackService.getLastThreeUserInterviews(this.userInfo.id).subscribe({
       next: (res) => {
         this.recentPerformances = res.map((interview: any) => ({
@@ -74,7 +83,6 @@ export class Dashboard implements OnInit {
       error: (err) => console.error('Error fetching last three interviews:', err)
     });
   }
-
   onLogout(): void {
     this.authService.logout().subscribe(() => {
       this.router.navigate(['/auth/login']);
@@ -87,8 +95,8 @@ export class Dashboard implements OnInit {
   }
 
   getScoreColor(score: number): string {
-    if (score >= 80) return '#ffd35c';
-    if (score >= 60) return '#fc657e';
+    if (score >= 80) return '#00ff00';
+    if (score >= 60) return '#ffff00';
     return '#FF0000';
   }
 
