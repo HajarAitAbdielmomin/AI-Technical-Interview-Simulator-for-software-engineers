@@ -1,1 +1,234 @@
-<p>interviews-data works!</p>
+<main class="interviews-body">
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">All Interviews</h2>
+      <p class="page-desc">Your complete session history</p>
+    </div>
+    <div class="header-meta" *ngIf="!isLoading">
+      <span class="total-badge">{{ filtered.length }} session{{ filtered.length !== 1 ? 's' : '' }}</span>
+    </div>
+  </div>
+
+  <!-- ── FILTERS ── -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label class="filter-label">Tech Stack</label>
+      <div class="filter-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="filter-input" type="text" placeholder="e.g. Java, React..." [(ngModel)]="filterStack" (ngModelChange)="onFilterChange()"/>
+        <button class="clear-btn" *ngIf="filterStack" (click)="filterStack=''; onFilterChange()">×</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Level</label>
+      <select class="filter-select" [(ngModel)]="filterLevel" (ngModelChange)="onFilterChange()">
+        <option value="">All levels</option>
+        <option *ngFor="let l of levels" [value]="l">{{ l }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Min Score</label>
+      <div class="score-range-wrap">
+        <input class="filter-input score-input" type="number" min="0" max="100" placeholder="0–100" [(ngModel)]="filterMinScore" (ngModelChange)="onFilterChange()"/>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Status</label>
+      <select class="filter-select" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
+        <option value="">All</option>
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="COMPLETED">Completed</option>
+      </select>
+    </div>
+
+    <button class="reset-btn" (click)="resetFilters()" *ngIf="hasActiveFilters">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      Reset
+    </button>
+  </div>
+
+  <!-- ── LOADING SKELETON ── -->
+  <div class="skeleton-list" *ngIf="isLoading">
+    <div class="skeleton-row" *ngFor="let _ of [1,2,3,4,5]">
+      <div class="sk sk-avatar"></div>
+      <div class="sk-lines">
+        <div class="sk sk-line w60"></div>
+        <div class="sk sk-line w40"></div>
+      </div>
+      <div class="sk sk-badge"></div>
+      <div class="sk sk-badge"></div>
+      <div class="sk sk-circle"></div>
+      <div class="sk sk-actions"></div>
+    </div>
+  </div>
+
+  <!-- ── EMPTY STATE ── -->
+  <div class="empty-state" *ngIf="!isLoading && filtered.length === 0">
+    <div class="empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <line x1="9" y1="10" x2="15" y2="10"/>
+      </svg>
+    </div>
+    <p class="empty-title">No interviews found</p>
+    <p class="empty-sub">Try adjusting your filters or start a new session.</p>
+  </div>
+
+  <!-- ── INTERVIEW TABLE ── -->
+  <div class="table-wrap" *ngIf="!isLoading && paged.length > 0">
+    <table class="interviews-table">
+      <thead>
+      <tr>
+        <th class="col-id">#</th>
+        <th class="col-interviewer">Interviewer</th>
+        <th class="col-stack">Stack</th>
+        <th class="col-level">Level</th>
+        <th class="col-status">Status</th>
+        <th class="col-date">Date</th>
+        <th class="col-score">Score</th>
+        <th class="col-actions">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="interview-row"
+          *ngFor="let iv of paged; let i = index"
+          [class.in-progress]="iv.status === 'IN_PROGRESS'"
+          [style.animation-delay]="(i * 0.06) + 's'">
+
+        <!-- ID -->
+        <td class="col-id">
+          <span class="id-badge">#{{ iv.id }}</span>
+        </td>
+
+        <!-- Interviewer -->
+        <td class="col-interviewer">
+          <div class="interviewer-cell">
+            <div class="interviewer-avatar" [class]="'av-' + iv.interviewerType">
+              <span>{{ getInterviewerInitials(iv.interviewerType) }}</span>
+            </div>
+            <div class="interviewer-info">
+              <span class="interviewer-name">{{ getInterviewerName(iv.interviewerType) }}</span>
+              <span class="interviewer-role">{{ getInterviewerRole(iv.interviewerType) }}</span>
+            </div>
+          </div>
+        </td>
+
+        <!-- Stack -->
+        <td class="col-stack">
+          <span class="stack-chip">{{ iv.techStack }}</span>
+        </td>
+
+        <!-- Level -->
+        <td class="col-level">
+          <span class="level-chip" [class]="'lv-' + iv.level.toLowerCase()">{{ iv.level }}</span>
+        </td>
+
+        <!-- Status -->
+        <td class="col-status">
+            <span class="status-pill" [class]="iv.status === 'IN_PROGRESS' ? 'status-progress' : 'status-done'">
+              <span class="status-dot" [class]="iv.status === 'IN_PROGRESS' ? 'dot-pulse' : 'dot-solid'"></span>
+              {{ iv.status === 'IN_PROGRESS' ? 'In Progress' : 'Completed' }}
+            </span>
+        </td>
+
+        <!-- Date -->
+        <td class="col-date">
+          <span class="date-text">{{ iv.startTime | date: 'MMM d, yyyy' }}</span>
+          <span class="time-text">{{ iv.startTime | date: 'HH:mm' }}</span>
+        </td>
+
+        <!-- Score -->
+        <td class="col-score">
+            <span class="score-val" *ngIf="iv.status === 'COMPLETED' && iv.score != null"
+                  [style.color]="getScoreColor(iv.score)">
+              {{ iv.score }}
+            </span>
+          <span class="score-na" *ngIf="iv.status === 'IN_PROGRESS' || iv.score == null">—</span>
+        </td>
+
+        <!-- Actions -->
+        <td class="col-actions">
+          <div class="actions-cell">
+            <!-- Resume button — IN_PROGRESS only -->
+            <button class="action-btn resume-btn" *ngIf="iv.status === 'IN_PROGRESS'"
+                    (click)="resumeInterview(iv.id)" title="Resume interview">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Resume
+            </button>
+
+            <!-- Details button — COMPLETED only -->
+            <button class="action-btn details-btn" *ngIf="iv.status === 'COMPLETED'"
+                    (click)="viewDetails(iv)" title="View details">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+
+            <!-- Delete -->
+            <button class="action-btn delete-btn" (click)="confirmDelete(iv)" title="Delete interview">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4h6v2"/>
+              </svg>
+            </button>
+          </div>
+        </td>
+
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── PAGINATION ── -->
+  <div class="pagination" *ngIf="!isLoading && totalPages > 1">
+    <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <ng-container *ngFor="let p of pageNumbers">
+      <span class="page-ellipsis" *ngIf="p === -1">…</span>
+      <button class="page-btn page-num" *ngIf="p !== -1"
+              [class.active]="p === currentPage"
+              (click)="goToPage(p)">{{ p }}</button>
+    </ng-container>
+
+    <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <span class="page-info">{{ (currentPage-1)*pageSize+1 }}–{{ min(currentPage*pageSize, filtered.length) }} of {{ filtered.length }}</span>
+  </div>
+
+</main>
+
+<!-- ── DELETE CONFIRM DIALOG ── -->
+<div class="dialog-backdrop" *ngIf="deleteTarget" (click)="cancelDelete()">
+  <div class="dialog-box" (click)="$event.stopPropagation()">
+    <div class="dialog-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M9 6V4h6v2"/>
+      </svg>
+    </div>
+    <h3 class="dialog-title">Delete Interview #{{ deleteTarget.id }}?</h3>
+    <p class="dialog-body">This will permanently remove the session and all its feedback. This cannot be undone.</p>
+    <div class="dialog-actions">
+      <button class="dialog-btn-cancel" (click)="cancelDelete()" [disabled]="isDeleting">Keep it</button>
+      <button class="dialog-btn-confirm" (click)="executeDelete()" [disabled]="isDeleting">
+        <span *ngIf="!isDeleting">Delete</span>
+        <span *ngIf="isDeleting" class="spinner-row"><span class="btn-spinner"></span> Deleting…</span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {environment} from '../environments/environment.development';
+import {ApiInterview} from './user/interviews-data/interviews-data';
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -17,6 +18,13 @@ export class InterviewService {
   getInterviews(): Observable<any> {
     const url = `${environment.apiUrl}/interviews`;
     return this.http.get(url, httpOptions);
+  }
+  getUserInterviews(userId: string): Observable<any[]> {
+    return this.http.get<ApiInterview[]>(`${environment.apiUrl}/interviews/user/${userId}/all`);
+  }
+
+  deleteInterview(id: number): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/interviews/${id}`, { responseType: 'text' });
   }
 
   getInterviewById(id: string): Observable<any> {
