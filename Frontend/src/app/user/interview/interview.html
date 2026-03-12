@@ -115,7 +115,7 @@
       <div class="msg-body">
         <div class="msg-sender">{{ interviewerName }}</div>
         <div class="bubble ai-bubble ready-bubble">
-          <p>Are you ready to begin? You'll have <strong>5 minutes</strong> once the timer starts. Click <strong>"Yes, Let's Go!"</strong> to unlock the chat. 🚀</p>
+          <p>Are you ready to begin? You'll have <strong>30 minutes</strong> once the timer starts. Click <strong>"Yes, Let's Go!"</strong> to unlock the chat. 🚀</p>
         </div>
         <div class="msg-time">Just now</div>
 
@@ -205,7 +205,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
-      Session ended — time's up
+      Session ended, time's up
     </div>
 
     <div class="input-inner">
@@ -281,6 +281,125 @@
     <div class="dialog-box ending-box">
       <div class="spinner-large"></div>
       <p class="ending-text">Wrapping up your session…</p>
+    </div>
+  </div>
+
+  <div class="feedback-backdrop" *ngIf="showFeedbackCard">
+    <div class="feedback-card">
+
+      <!-- Header -->
+      <div class="feedback-header">
+        <div class="feedback-header-top">
+          <div class="feedback-logo-mark">
+            <svg viewBox="0 0 40 40" fill="none" width="28" height="28">
+              <rect x="3" y="5" width="28" height="20" rx="5" fill="url(#fbLogo)"/>
+              <path d="M3 21l7 8v-8" fill="url(#fbLogo)"/>
+              <text x="9" y="20" font-family="monospace" font-size="11" font-weight="bold" fill="#0a0a0a">&lt;/&gt;</text>
+              <defs><linearGradient id="fbLogo" x1="0" y1="0" x2="36" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#ffd35c"/><stop offset="1" stop-color="#fc657e"/>
+              </linearGradient></defs>
+            </svg>
+          </div>
+          <span class="feedback-header-label">Interview Complete</span>
+        </div>
+        <h2 class="feedback-title">Your Results</h2>
+        <p class="feedback-subtitle">{{ config.techStack }} · {{ config.level }} · {{ interviewerName }}</p>
+      </div>
+
+      <!-- Score gauge -->
+      <div class="score-section" *ngIf="feedbackData">
+        <div class="score-gauge-wrap">
+          <svg class="score-gauge" viewBox="0 0 160 100" fill="none">
+            <!-- Background track (half-circle) -->
+            <path d="M15 95 A65 65 0 0 1 145 95"
+                  stroke="rgba(255,255,255,0.07)" stroke-width="12"
+                  stroke-linecap="round" fill="none"/>
+            <!-- Filled arc — dashoffset driven by score -->
+            <path d="M15 95 A65 65 0 0 1 145 95"
+                  [attr.stroke]="gaugeColor(feedbackData.score)"
+                  stroke-width="12" stroke-linecap="round" fill="none"
+                  stroke-dasharray="204"
+                  [attr.stroke-dashoffset]="gaugeDashOffset(feedbackData.score)"
+                  class="gauge-arc"/>
+            <!-- Dot at tip of arc -->
+            <circle r="5" opacity="0.95"
+                    [attr.fill]="gaugeColor(feedbackData.score)"
+                    [attr.cx]="gaugeDotX(feedbackData.score)"
+                    [attr.cy]="gaugeDotY(feedbackData.score)"/>
+          </svg>
+          <div class="score-center">
+            <div class="score-number" [class]="scoreColor">{{ feedbackData.score }}</div>
+            <div class="score-label">Score</div>
+          </div>
+        </div>
+        <div class="score-badge" [class]="scoreColor + '-badge'">{{ scoreSeverity }}</div>
+      </div>
+
+      <!-- Sections -->
+      <div class="feedback-sections" *ngIf="feedbackData">
+
+        <!-- Strengths -->
+        <div class="fb-section">
+          <div class="fb-section-header">
+            <span class="fb-section-icon strengths-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
+            <span class="fb-section-title">Strengths</span>
+          </div>
+          <ul class="fb-list">
+            <li *ngFor="let s of feedbackData.strengths" class="fb-item strengths-item">
+              <span class="fb-dot strengths-dot"></span>{{ s }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Weaknesses -->
+        <div class="fb-section">
+          <div class="fb-section-header">
+            <span class="fb-section-icon weaknesses-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </span>
+            <span class="fb-section-title">Weaknesses</span>
+          </div>
+          <ul class="fb-list">
+            <li *ngFor="let w of feedbackData.weaknesses" class="fb-item weaknesses-item">
+              <span class="fb-dot weaknesses-dot"></span>{{ w }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Improvements -->
+        <div class="fb-section">
+          <div class="fb-section-header">
+            <span class="fb-section-icon improvements-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+              </svg>
+            </span>
+            <span class="fb-section-title">Suggested Improvements</span>
+          </div>
+          <ul class="fb-list">
+            <li *ngFor="let i of feedbackData.improvementsSuggestions" class="fb-item improvements-item">
+              <span class="fb-dot improvements-dot"></span>{{ i }}
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- CTA -->
+      <button class="feedback-cta" (click)="goToDashboard()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Back to Dashboard
+      </button>
+
     </div>
   </div>
 

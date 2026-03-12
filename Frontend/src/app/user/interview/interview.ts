@@ -38,6 +38,23 @@ export interface SubmitAnswerResponse {
   interviewComplete: boolean;
 }
 
+/** Shape returned by interviewService.endInterview(id) — adjust fields to match your API */
+export interface FeedbackResponse {
+  id:                  number;
+  score:               number;          // 0–100
+  strengths:           string;        // list of strength points
+  weaknesses:          string;        // list of weakness points
+  improvementsSuggestions: string;      // list of improvement suggestions
+}
+export interface ParsedFeedback {
+  id:                    number;
+  score:                 number;
+  strengths:             string[];
+  weaknesses:            string[];
+  improvementsSuggestions: string[];
+}
+
+
 @Component({
   selector: 'app-interview',
   standalone: true,
@@ -63,7 +80,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   userInitials = '';
 
   private readonly personas: Record<InterviewerType, { name: string; initials: string; style: string; role: string }> = {
-    FAANG_STRICT:     { name: 'Dr. Alex Reid', initials: 'AR', style: 'rigorous FAANG-style, algorithm-focused',  role: 'Senior Staff Engineer · FAANG' },
+    FAANG_STRICT:     { name: 'Dr. Alex Reid', initials: 'AR', style: 'rigorous FAANG-style, algorithm focused',  role: 'Senior Staff Engineer · FAANG' },
     STARTUP_FRIENDLY: { name: 'Jordan Chen',      initials: 'JC', style: 'startup-friendly, practical & pragmatic', role: 'CTO · Series-A Startup'          },
     JUNIOR_FRIENDLY:  { name: 'Sam Rivera',     initials: 'SR', style: 'junior-friendly, supportive & clear',     role: 'Senior Engineer · Mentorship'     }
   };
@@ -78,7 +95,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   isLastQuestion            = false;
   interviewComplete         = false;
 
-  private secondsLeft   = 300;
+  private secondsLeft   = 1800;
   private timerInterval: any;
 
   get remainingTime():  string  { const m = Math.floor(this.secondsLeft/60).toString().padStart(2,'0'); const s = (this.secondsLeft%60).toString().padStart(2,'0'); return `${m}:${s}`; }
@@ -99,6 +116,29 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   // ── Early-exit confirmation dialog ──
   showExitDialog    = false;   // controls dialog visibility
   isEndingInterview = false;   // shows spinner while API call is in flight
+
+  // ── Feedback card ──
+  showFeedbackCard  = false;   // becomes true 5s after endInterview API responds
+  feedbackData:     ParsedFeedback  | null = null;
+
+  /** Tailwind/CSS class for the score arc colour */
+  get scoreColor(): string {
+    if (!this.feedbackData) return 'score-gray';
+    const s = this.feedbackData.score;
+    if (s >= 80) return 'score-gold';
+    if (s >= 60) return 'score-amber';
+    return 'score-coral';
+  }
+
+  /** Human-readable severity label */
+  get scoreSeverity(): string {
+    if (!this.feedbackData) return '';
+    const s = this.feedbackData.score;
+    if (s >= 80) return 'Excellent';
+    if (s >= 60) return 'Good';
+    if (s >= 40) return 'Needs Work';
+    return 'Poor';
+  }
 
   get questionProgress(): string {
     if (!this.interviewStarted || this.currentQuestionNumber === 0) return '';
@@ -153,6 +193,8 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
       this.secondsLeft = msLeft > 0 ? Math.floor(msLeft / 1000) : 300;
     }
 
+    this.secondsLeft = 60;
+
     this.cdr.markForCheck();
   }
 
@@ -179,7 +221,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
       this.showExitDialog = true;
     } else {
       // Already finished → end cleanly
-      this.endInterviewAndNavigate();
+      this.endInterviewAndShowFeedback();
     }
   }
 
@@ -202,24 +244,73 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
    *   2. User confirmed early exit from the dialog.
    *   3. Timer ran out (automatic end).
    */
-  private endInterviewAndNavigate(): void {
+  private endInterviewAndShowFeedback(): void {
     clearInterval(this.timerInterval);
     this.isEndingInterview = true;
 
+    // Step 1 — end the interview (API returns plain text, not JSON)
     this.interviewService.endInterview(this.interview.id).subscribe({
       next: () => {
-        this.isEndingInterview = false;
-        this.router.navigate(['/user/dashboard']);
+        // Step 2 — fetch the feedback JSON in a separate call
+        this.interviewService.getFeedback(this.interview.id).subscribe({
+          next: (raw: FeedbackResponse) => {
+            this.isEndingInterview = false;
+
+            // Parse the '||'-delimited strings into arrays
+            const feedback: ParsedFeedback = {
+              id:                    raw.id,
+              score:                 raw.score,
+              strengths:             raw.strengths?.split('||').map(s => s.trim()).filter(Boolean) ?? [],
+              weaknesses:            raw.weaknesses?.split('||').map(s => s.trim()).filter(Boolean) ?? [],
+              improvementsSuggestions: raw.improvementsSuggestions?.split('||').map(s => s.trim()).filter(Boolean) ?? []
+            };
+
+            // Wait 3s after API responds (user already waited ~2s before the call)
+            setTimeout(() => {
+              this.feedbackData    = feedback;
+              this.showFeedbackCard = true;
+              this.cdr.markForCheck();
+            }, 10000);
+          },
+          error: (err: any) => {
+            console.error('getFeedback API error', err);
+            this.isEndingInterview = false;
+            this.router.navigate(['/user/dashboard']);
+          }
+        });
       },
       error: (err: any) => {
-        // Even if the API call fails, navigate away so the user isn't stuck
-        console.error('Failed to end interview cleanly', err);
+        console.error('endInterview API error', err);
         this.isEndingInterview = false;
         this.router.navigate(['/user/dashboard']);
       }
     });
   }
+  // ── Gauge helpers (used in template — Math not allowed directly in Angular templates) ──
+  // Half-circle arc path length ≈ π × 65 ≈ 204
+  private readonly ARC_LEN = 204;
 
+  gaugeColor(score: number): string {
+    if (score >= 80) return '#ffd35c';
+    if (score >= 60) return '#fb923c';
+    return '#fc657e';
+  }
+
+  gaugeDashOffset(score: number): number {
+    return this.ARC_LEN - (score / 100) * this.ARC_LEN;
+  }
+
+  /** X coordinate of the dot at the tip of the filled arc */
+  gaugeDotX(score: number): number {
+    const angle = (score / 100) * Math.PI; // 0 → π (left to right)
+    return 80 - 65 * Math.cos(angle);      // centre-x = 80, radius = 65
+  }
+
+  /** Y coordinate of the dot at the tip of the filled arc */
+  gaugeDotY(score: number): number {
+    const angle = (score / 100) * Math.PI;
+    return 95 - 65 * Math.sin(angle);      // baseline y = 95
+  }
   // ══════════════════════════════════════════════════════════════════════════
   // READY
   // ══════════════════════════════════════════════════════════════════════════
@@ -262,21 +353,27 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         this.isTyping = false;
 
         if (res.interviewComplete || this.isLastQuestion) {
-          // ── All 8 answered ────────────────────────────────────────────────
+          // ── All 8 answered ───────────────────────────────────────────────
           this.interviewComplete = true;
 
+          // Replace placeholder with completion message.
+          // Reassign the whole array so Angular's change detection picks it up.
           const idx = this.messages.indexOf(placeholder);
           if (idx !== -1) {
-            this.messages[idx] = {
+            const updated = [...this.messages];
+            updated[idx] = {
               role: 'ai',
-              text: `✅ That's all ${this.MAX_QUESTIONS} questions, ${this.userName}! Great job. The interview is complete — you'll receive detailed feedback shortly.`,
+              text: `✅ That's all ${this.MAX_QUESTIONS} questions, ${this.userName}! Great job. The interview is complete, you'll receive detailed feedback shortly.`,
               time: this.nowTime()
             };
+            this.messages = updated;
           }
           this.shouldScroll = true;
+          this.cdr.detectChanges();
 
-          // Automatically call endInterview when all Q&A are done
-          this.endInterviewAndNavigate();
+          // Wait 2s so the completion message is readable,
+          // then call endInterview → getFeedback → show card after another 3s
+          setTimeout(() => this.endInterviewAndShowFeedback(), 5000);
 
         } else {
           // ── More questions remain ─────────────────────────────────────────
@@ -336,6 +433,9 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
+  goToDashboard(): void {
+    this.router.navigate(['/user/dashboard']);
+  }
 
   private fetchNextQuestion(): void {
     this.interviewService.generateQuestion(this.interview.id).subscribe({
@@ -365,13 +465,13 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         // Add the time's-up message in chat
         this.messages.push({
           role: 'ai',
-          text: `⏱️ Time's up, ${this.userName}! That wraps up our session. Thank you for your answers — I'll have feedback for you shortly.`,
+          text: `⏱️ Time's up, ${this.userName}! That wraps up our session. Thank you for your answers, I'll have feedback for you shortly.`,
           time: this.nowTime()
         });
         this.shouldScroll = true;
 
         // Automatically end the interview when timer reaches 0
-        this.endInterviewAndNavigate();
+        setTimeout(() => this.endInterviewAndShowFeedback(), 5000);
       }
     }, 1000);
   }
