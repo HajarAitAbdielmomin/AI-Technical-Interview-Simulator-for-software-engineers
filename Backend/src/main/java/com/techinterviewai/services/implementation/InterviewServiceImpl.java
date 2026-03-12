@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -210,4 +211,11 @@ public class InterviewServiceImpl implements InterviewService {
                 .map(interviewDataMapper::toDto)
                 .toList();
     }
+
+   @Override
+    public boolean delete(Long id){
+       Optional<Interview> task = interviewRepository.findById(id);
+       task.ifPresent(interviewRepository::delete);
+       return task.isPresent();
+   }
 }

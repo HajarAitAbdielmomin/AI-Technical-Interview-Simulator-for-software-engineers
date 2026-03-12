@@ -21,4 +21,5 @@ public interface InterviewService {
     FeedbackResponse getFeedback(Long interviewId);
     List<InterviewFeedbackDto> getLastThreeCompletedInterviews(Long userId);
     List<InterviewDataDto> getAllInterviewsByUser(Long userId);
+    boolean delete(Long interviewId);
 }

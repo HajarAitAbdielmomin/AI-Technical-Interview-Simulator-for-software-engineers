@@ -85,4 +85,12 @@ public class InterviewController {
     public ResponseEntity<?> getAllUserInterviews(@PathVariable Long id) {
         return ResponseEntity.ok(interviewService.getAllInterviewsByUser(id));
     }
+
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<?> removeInterview(@PathVariable Long id){
+        return interviewService.delete(id) ?
+                ResponseEntity.ok().body("Interview deleted successfully") :
+                ResponseEntity.badRequest().body("Interview deletion failed");
+    }
+
 }
