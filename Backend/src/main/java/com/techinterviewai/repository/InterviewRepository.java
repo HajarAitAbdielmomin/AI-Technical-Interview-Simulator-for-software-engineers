@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
     List<Interview> findTop3ByUserIdAndStatusOrderByEndTimeDesc(Long userId, Status status);
+    List<Interview> findByUserId(Long userId);
 
 }

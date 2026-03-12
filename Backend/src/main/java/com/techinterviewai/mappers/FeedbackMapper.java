@@ -1,6 +1,6 @@
 package com.techinterviewai.mappers;
 
-import com.techinterviewai.dto.FeedbackResponse;
+import com.techinterviewai.dto.feedbacksDto.FeedbackResponse;
 import com.techinterviewai.models.Feedback;
 import org.mapstruct.*;
 

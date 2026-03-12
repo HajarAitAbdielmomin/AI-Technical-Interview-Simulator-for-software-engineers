@@ -1,6 +1,5 @@
 package com.techinterviewai.services;
 
-import com.techinterviewai.dto.InterviewDto;
 import com.techinterviewai.models.Interview;
 
 /**

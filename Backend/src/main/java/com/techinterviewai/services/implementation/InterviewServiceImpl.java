@@ -1,15 +1,13 @@
 package com.techinterviewai.services.implementation;
 
-import com.techinterviewai.dto.*;
+import com.techinterviewai.dto.feedbacksDto.FeedbackResponse;
+import com.techinterviewai.dto.interviewsDto.*;
 import com.techinterviewai.enums.Status;
 import com.techinterviewai.exceptions.FeedbackNotAvailableException;
 import com.techinterviewai.exceptions.PendingAnswerException;
 import com.techinterviewai.exceptions.QuestionsOutOfBoundException;
 import com.techinterviewai.exceptions.UserNotFoundException;
-import com.techinterviewai.mappers.FeedbackMapper;
-import com.techinterviewai.mappers.QuestionAnswerMapper;
-import com.techinterviewai.mappers.InterviewMapper;
-import com.techinterviewai.mappers.InterviewDetailsMapper;
+import com.techinterviewai.mappers.*;
 import com.techinterviewai.models.Interview;
 import com.techinterviewai.models.QuestionAnswer;
 import com.techinterviewai.models.User;
@@ -17,7 +15,6 @@ import com.techinterviewai.repository.InterviewRepository;
 import com.techinterviewai.repository.QuestionAnswerRepository;
 import com.techinterviewai.repository.UserRepository;
 import com.techinterviewai.services.InterviewService;
-import com.techinterviewai.services.QuestionGenerationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +37,7 @@ public class InterviewServiceImpl implements InterviewService {
     private final FeedbackMapper feedbackMapper;
     private final EvaluationServiceImpl evaluationService;
     private final InterviewFeedbackMapper interviewFeedbackMapper;
+    private final InterviewDataMapper interviewDataMapper;
 
     @Value("${app.interview.max-questions:8}")
     private int maxQuestions;
@@ -204,6 +201,13 @@ public class InterviewServiceImpl implements InterviewService {
         return interviewRepository.findTop3ByUserIdAndStatusOrderByEndTimeDesc(userId, Status.COMPLETED)
                 .stream()
                 .map(interviewFeedbackMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<InterviewDataDto> getAllInterviewsByUser(Long userId) {
+        return interviewRepository.findByUserId(userId).stream()
+                .map(interviewDataMapper::toDto)
                 .toList();
     }
 }

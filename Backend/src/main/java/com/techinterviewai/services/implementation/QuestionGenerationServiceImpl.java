@@ -1,7 +1,5 @@
 package com.techinterviewai.services.implementation;
 
-import com.techinterviewai.dto.InterviewDto;
-import com.techinterviewai.exceptions.InterviewNotFoundException;
 import com.techinterviewai.models.Interview;
 import com.techinterviewai.models.QuestionAnswer;
 import com.techinterviewai.repository.InterviewRepository;

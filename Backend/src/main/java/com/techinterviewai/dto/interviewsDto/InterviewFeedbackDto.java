@@ -1,6 +1,6 @@
-package com.techinterviewai.dto;
+package com.techinterviewai.dto.interviewsDto;
 
-import com.techinterviewai.models.FeedbackDto;
+import com.techinterviewai.dto.feedbacksDto.FeedbacksDto;
 import lombok.Value;
 
 import java.io.Serializable;
@@ -13,5 +13,5 @@ import java.time.LocalDateTime;
 public class InterviewFeedbackDto implements Serializable {
     String techStack;
     LocalDateTime startTime;
-    FeedbackDto feedback;
+    FeedbacksDto feedback;
 }

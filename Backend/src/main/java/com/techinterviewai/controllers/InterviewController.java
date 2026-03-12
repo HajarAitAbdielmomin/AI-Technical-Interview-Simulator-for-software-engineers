@@ -1,8 +1,7 @@
 package com.techinterviewai.controllers;
 
-import com.techinterviewai.dto.InterviewDto;
-import com.techinterviewai.dto.InterviewDetailsDto;
-import com.techinterviewai.dto.QuestionAnswerDto;
+import com.techinterviewai.dto.interviewsDto.InterviewDto;
+import com.techinterviewai.dto.interviewsDto.QuestionAnswerDto;
 import com.techinterviewai.models.QuestionAnswer;
 import com.techinterviewai.services.implementation.InterviewServiceImpl;
 import jakarta.validation.Valid;
@@ -80,5 +79,10 @@ public class InterviewController {
     @GetMapping("/user/{id}")
     public ResponseEntity<?> getLastThreeUserInterviews(@PathVariable Long id) {
         return ResponseEntity.ok(interviewService.getLastThreeCompletedInterviews(id));
+    }
+
+    @GetMapping("/user/{id}/all")
+    public ResponseEntity<?> getAllUserInterviews(@PathVariable Long id) {
+        return ResponseEntity.ok(interviewService.getAllInterviewsByUser(id));
     }
 }

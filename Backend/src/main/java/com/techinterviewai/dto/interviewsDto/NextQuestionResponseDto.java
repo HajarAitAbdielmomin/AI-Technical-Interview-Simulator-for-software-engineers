@@ -1,4 +1,4 @@
-package com.techinterviewai.dto;
+package com.techinterviewai.dto.interviewsDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

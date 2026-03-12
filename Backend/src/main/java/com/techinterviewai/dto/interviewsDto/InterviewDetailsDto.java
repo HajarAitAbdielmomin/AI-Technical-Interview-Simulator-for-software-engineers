@@ -1,4 +1,4 @@
-package com.techinterviewai.dto;
+package com.techinterviewai.dto.interviewsDto;
 
 import com.techinterviewai.enums.InterviewerType;
 import com.techinterviewai.enums.Level;

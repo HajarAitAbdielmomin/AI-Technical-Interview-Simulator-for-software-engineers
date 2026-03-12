@@ -1,11 +1,11 @@
 package com.techinterviewai.services;
 
-import com.techinterviewai.dto.*;
+import com.techinterviewai.dto.feedbacksDto.FeedbackResponse;
+import com.techinterviewai.dto.interviewsDto.*;
 import com.techinterviewai.models.QuestionAnswer;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface InterviewService {
     Long startInterview(InterviewDto interviewDto);
@@ -20,4 +20,5 @@ public interface InterviewService {
     int getQuestionCount(Long interviewId);
     FeedbackResponse getFeedback(Long interviewId);
     List<InterviewFeedbackDto> getLastThreeCompletedInterviews(Long userId);
+    List<InterviewDataDto> getAllInterviewsByUser(Long userId);
 }

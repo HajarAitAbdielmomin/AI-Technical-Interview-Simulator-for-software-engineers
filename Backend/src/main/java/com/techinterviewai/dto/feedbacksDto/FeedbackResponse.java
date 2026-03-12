@@ -1,8 +1,7 @@
-package com.techinterviewai.dto;
+package com.techinterviewai.dto.feedbacksDto;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Value;
 
 import java.io.Serializable;
 

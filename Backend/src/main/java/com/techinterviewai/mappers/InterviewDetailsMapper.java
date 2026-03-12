@@ -1,6 +1,6 @@
 package com.techinterviewai.mappers;
 
-import com.techinterviewai.dto.InterviewDetailsDto;
+import com.techinterviewai.dto.interviewsDto.InterviewDetailsDto;
 import com.techinterviewai.models.Interview;
 import org.mapstruct.*;
 

@@ -1,7 +1,6 @@
 package com.techinterviewai.services;
 
-import com.techinterviewai.dto.FeedbackResponse;
-import com.techinterviewai.models.Interview;
+import com.techinterviewai.dto.feedbacksDto.FeedbackResponse;
 
 public interface EvaluationService {
     FeedbackResponse evaluateInterview(Long interviewId);

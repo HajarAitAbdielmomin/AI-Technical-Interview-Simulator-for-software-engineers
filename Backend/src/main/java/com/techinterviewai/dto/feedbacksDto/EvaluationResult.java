@@ -1,4 +1,4 @@
-package com.techinterviewai.dto;
+package com.techinterviewai.dto.feedbacksDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

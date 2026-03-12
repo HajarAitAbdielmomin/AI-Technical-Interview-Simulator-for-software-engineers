@@ -1,7 +1,6 @@
 package com.techinterviewai.controllers;
 
-import com.techinterviewai.dto.FeedbackResponse;
-import com.techinterviewai.repository.FeedbackRepository;
+import com.techinterviewai.dto.feedbacksDto.FeedbackResponse;
 import com.techinterviewai.services.InterviewService;
 import com.techinterviewai.services.implementation.FeedbackServiceImpl;
 import lombok.RequiredArgsConstructor;

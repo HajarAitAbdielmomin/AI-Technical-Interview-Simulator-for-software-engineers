@@ -1,8 +1,8 @@
 package com.techinterviewai.services.implementation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.techinterviewai.dto.EvaluationResult;
-import com.techinterviewai.dto.FeedbackResponse;
+import com.techinterviewai.dto.feedbacksDto.EvaluationResult;
+import com.techinterviewai.dto.feedbacksDto.FeedbackResponse;
 import com.techinterviewai.exceptions.UserNotFoundException;
 import com.techinterviewai.mappers.FeedbackMapper;
 import com.techinterviewai.models.Feedback;
@@ -18,7 +18,6 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
