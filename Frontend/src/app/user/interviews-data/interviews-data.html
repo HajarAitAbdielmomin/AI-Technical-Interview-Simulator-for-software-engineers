@@ -232,3 +232,169 @@
     </div>
   </div>
 </div>
+
+<!-- ════════════════════════════════════════
+     DETAILS DRAWER
+════════════════════════════════════════ -->
+<div class="drawer-backdrop" *ngIf="drawerInterview" (click)="closeDrawer()"></div>
+
+<aside class="drawer" [class.drawer-open]="drawerInterview" *ngIf="drawerInterview">
+
+  <!-- ── Drawer Header ── -->
+  <div class="drawer-header">
+    <div class="drawer-title-row">
+      <div class="drawer-id-group">
+        <span class="drawer-id">#{{ drawerInterview.id }}</span>
+        <span class="status-pill" [class]="drawerInterview.status === 'IN_PROGRESS' ? 'status-progress' : 'status-done'">
+          <span class="status-dot" [class]="drawerInterview.status === 'IN_PROGRESS' ? 'dot-pulse' : 'dot-solid'"></span>
+          {{ drawerInterview.status === 'IN_PROGRESS' ? 'In Progress' : 'Completed' }}
+        </span>
+      </div>
+      <button class="drawer-close" (click)="closeDrawer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Interviewer -->
+    <div class="drawer-interviewer">
+      <div class="interviewer-avatar drawer-av" [class]="'av-' + drawerInterview.interviewerType">
+        {{ getInterviewerInitials(drawerInterview.interviewerType) }}
+      </div>
+      <div class="interviewer-info">
+        <span class="interviewer-name">{{ getInterviewerName(drawerInterview.interviewerType) }}</span>
+        <span class="interviewer-role">{{ getInterviewerRole(drawerInterview.interviewerType) }}</span>
+      </div>
+    </div>
+
+    <!-- Meta chips -->
+    <div class="drawer-meta">
+      <span class="stack-chip">{{ drawerInterview.techStack }}</span>
+      <span class="level-chip" [class]="'lv-' + drawerInterview.level.toLowerCase()">{{ drawerInterview.level }}</span>
+      <span class="drawer-date">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        {{ drawerInterview.startTime | date: 'MMM d, yyyy · HH:mm' }}
+      </span>
+    </div>
+
+    <!-- Score gauge -->
+    <div class="drawer-score-row" *ngIf="drawerInterview.score != null">
+      <div class="drawer-gauge-wrap">
+        <svg class="drawer-gauge" viewBox="0 0 120 70">
+          <!-- Background arc -->
+          <path d="M10,65 A55,55 0 0,1 110,65" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="10" stroke-linecap="round"/>
+          <!-- Score arc -->
+          <path d="M10,65 A55,55 0 0,1 110,65" fill="none"
+                [attr.stroke]="getScoreColor(drawerInterview.score)"
+                stroke-width="10" stroke-linecap="round"
+                [style.stroke-dasharray]="getGaugeDash(drawerInterview.score)"
+                [style.filter]="'drop-shadow(0 0 6px ' + getScoreColor(drawerInterview.score) + ')'"/>
+          <text x="60" y="58" text-anchor="middle" font-size="22" font-weight="700"
+                font-family="Space Mono, monospace" [attr.fill]="getScoreColor(drawerInterview.score)">
+            {{ drawerInterview.score }}
+          </text>
+          <text x="60" y="70" text-anchor="middle" font-size="9" font-family="DM Sans, sans-serif" fill="#6b6b6b">SCORE</text>
+        </svg>
+      </div>
+      <div class="score-legend">
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#00ff00"></span>
+          <span>≥ 80 · Excellent</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#ffff00"></span>
+          <span>≥ 60 · Good</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#FF0000"></span>
+          <span>&lt; 60 · Needs work</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tabs ── -->
+  <div class="drawer-tabs">
+    <button class="dtab" [class.dtab-active]="drawerTab === 'qa'"           (click)="setDrawerTab('qa')">
+      Q &amp; A <span class="dtab-count">{{ drawerInterview.questionAnswer.length }}</span>
+    </button>
+    <button class="dtab" [class.dtab-active]="drawerTab === 'strengths'"    (click)="setDrawerTab('strengths')">
+      Strengths <span class="dtab-count green">{{ drawerInterview.strengths.length }}</span>
+    </button>
+    <button class="dtab" [class.dtab-active]="drawerTab === 'weaknesses'"   (click)="setDrawerTab('weaknesses')">
+      Weaknesses <span class="dtab-count red">{{ drawerInterview.weaknesses.length }}</span>
+    </button>
+    <button class="dtab" [class.dtab-active]="drawerTab === 'improvements'" (click)="setDrawerTab('improvements')">
+      Tips <span class="dtab-count gold">{{ drawerInterview.improvements.length }}</span>
+    </button>
+  </div>
+
+  <!-- ── Tab Content ── -->
+  <div class="drawer-body">
+
+    <!-- Q&A Tab -->
+    <div class="tab-content" *ngIf="drawerTab === 'qa'">
+      <div class="qa-empty" *ngIf="drawerInterview.questionAnswer.length === 0">
+        <p>No questions recorded for this session.</p>
+      </div>
+      <div class="qa-card" *ngFor="let qa of drawerInterview.questionAnswer; let i = index">
+        <div class="qa-num">Q{{ i + 1 }}</div>
+        <div class="qa-question">{{ qa.question }}</div>
+        <div class="qa-divider"></div>
+        <div class="qa-answer-label">Your answer</div>
+        <div class="qa-answer">{{ qa.userAnswer || '(no answer provided)' }}</div>
+      </div>
+    </div>
+
+    <!-- Strengths Tab -->
+    <div class="tab-content" *ngIf="drawerTab === 'strengths'">
+      <div class="feedback-empty" *ngIf="drawerInterview.strengths.length === 0">
+        <p>No strengths recorded.</p>
+      </div>
+      <div class="feedback-item strength-item" *ngFor="let s of drawerInterview.strengths; let i = index">
+        <div class="feedback-bullet green-bullet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <p class="feedback-text">{{ s }}</p>
+      </div>
+    </div>
+
+    <!-- Weaknesses Tab -->
+    <div class="tab-content" *ngIf="drawerTab === 'weaknesses'">
+      <div class="feedback-empty" *ngIf="drawerInterview.weaknesses.length === 0">
+        <p>No weaknesses recorded.</p>
+      </div>
+      <div class="feedback-item weakness-item" *ngFor="let w of drawerInterview.weaknesses">
+        <div class="feedback-bullet red-bullet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+        <p class="feedback-text">{{ w }}</p>
+      </div>
+    </div>
+
+    <!-- Improvements Tab -->
+    <div class="tab-content" *ngIf="drawerTab === 'improvements'">
+      <div class="feedback-empty" *ngIf="drawerInterview.improvements.length === 0">
+        <p>No improvement tips recorded.</p>
+      </div>
+      <div class="feedback-item improvement-item" *ngFor="let tip of drawerInterview.improvements; let i = index">
+        <div class="feedback-bullet gold-bullet">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <p class="feedback-text">{{ tip }}</p>
+      </div>
+    </div>
+
+  </div>
+</aside>

@@ -10,9 +10,9 @@ export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'HR_BEHAVIOR
 // Raw shape returned by the API
 export interface ApiFeedback {
   score:                number;
-  strengths:            string;   // '||'-delimited
-  weaknesses:           string;   // '||'-delimited
-  improvement_suggestions: string; // '||'-delimited
+  strengths:            string;
+  weaknesses:           string;
+  improvement_suggestions: string;
 }
 
 export interface ApiInterview {
@@ -26,8 +26,7 @@ export interface ApiInterview {
   feedback:        ApiFeedback | null;
   questionAnswer:  { question: string; userAnswer: string; interviewId: null }[];
 }
-
-// Mapped shape used by the template
+// Mapped shape used by the template (includes parsed data for drawer)
 export interface InterviewRow {
   id:              number;
   interviewerType: InterviewerType;
@@ -36,7 +35,11 @@ export interface InterviewRow {
   status:          'IN_PROGRESS' | 'COMPLETED';
   startTime:       string;
   endTime:         string | null;
-  score:           number | null;  // pre-extracted for easy access
+  score:           number | null;
+  strengths:       string[];
+  weaknesses:      string[];
+  improvements:    string[];
+  questionAnswer:  { question: string; userAnswer: string }[];
 }
 
 @Component({
@@ -86,6 +89,13 @@ export class InterviewsData implements OnInit {
       pages.push(total);
     }
     return pages;
+  }
+
+  // Gauge arc dash — total arc length ≈ 172.8 (half-circle r=55)
+  getGaugeDash(score: number | null): string {
+    if (score == null) return '0 172.8';
+    const filled = (score / 100) * 172.8;
+    return `${filled} 172.8`;
   }
 
   // ── Delete dialog ──
@@ -140,7 +150,11 @@ export class InterviewsData implements OnInit {
             status:          iv.status,
             startTime:       iv.startTime,
             endTime:         iv.endTime ?? null,
-            score:           iv.feedback?.score != null ? Math.round(iv.feedback.score) : null
+            score:           iv.feedback?.score != null ? Math.round(iv.feedback.score) : null,
+            strengths:       iv.feedback?.strengths    ? iv.feedback.strengths.split('||').map(s => s.trim()).filter(Boolean)    : [],
+            weaknesses:      iv.feedback?.weaknesses   ? iv.feedback.weaknesses.split('||').map(s => s.trim()).filter(Boolean)   : [],
+            improvements:    iv.feedback?.improvement_suggestions ? iv.feedback.improvement_suggestions.split('||').map(s => s.trim()).filter(Boolean) : [],
+            questionAnswer:  (iv.questionAnswer ?? []).map(qa => ({ question: qa.question, userAnswer: qa.userAnswer }))
           }))
           .sort((a, b) => {
             // IN_PROGRESS always first
@@ -161,7 +175,6 @@ export class InterviewsData implements OnInit {
       }
     });
   }
-
   onFilterChange(): void {
     this.currentPage = 1;
     this.applyFilters();
@@ -216,8 +229,23 @@ export class InterviewsData implements OnInit {
     this.router.navigate(['/user/interview', id]);
   }
 
+// ── Drawer ──
+  drawerInterview: InterviewRow | null = null;
+  drawerTab: 'qa' | 'strengths' | 'weaknesses' | 'improvements' = 'qa';
+
   viewDetails(iv: InterviewRow): void {
-    this.router.navigate(['/user/interview', iv.id]);
+    this.drawerInterview = iv;
+    this.drawerTab       = 'qa';
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeDrawer(): void {
+    this.drawerInterview = null;
+    document.body.style.overflow = '';
+  }
+
+  setDrawerTab(tab: 'qa' | 'strengths' | 'weaknesses' | 'improvements'): void {
+    this.drawerTab = tab;
   }
 
   confirmDelete(iv: InterviewRow): void {
