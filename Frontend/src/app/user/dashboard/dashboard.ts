@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import {StorageService} from '../../storage.service';
-import {AuthService} from '../../auth.service';
+import { StorageService } from '../../storage.service';
+import { AuthService } from '../../auth.service';
+import { FeedbackService } from '../../feedback.service';
 
 export interface Performance {
-  score: number;
-  techStack: string[];
-  date: Date;
-  feedback: string;
+  score:     number;
+  techStack: string;
+  date:      Date;
+  feedback:  string[];
 }
+
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, RouterModule, DatePipe],
@@ -17,38 +19,26 @@ export interface Performance {
   styleUrl: './dashboard.css',
   standalone: true
 })
-export class Dashboard implements OnInit{
+export class Dashboard implements OnInit {
 
   // ── Stats ──
-  totalInterviews = 14;
-  avgScore        = 73;
-  bestScore       = 91;
+  totalInterviews = 0;
+  avgScore        = 0;
+  bestScore       = 0;
   avgTrendLabel   = '+5 this month';
   streakDays      = 5;
 
   // ── Recent Performances ──
-  recentPerformances: Performance[] = [
-    {
-      score: 91,
-      techStack: ['TypeScript', 'Node.js', 'REST API'],
-      date: new Date('2025-03-01'),
-      feedback: 'Excellent grasp of async patterns. Focus more on edge-case handling and error propagation in complex pipelines.'
-    },
-    {
-      score: 74,
-      techStack: ['Angular', 'RxJS'],
-      date: new Date('2025-02-21'),
-      feedback: 'Good component design. Deepen understanding of Observable lifecycle and memory leak prevention with proper unsubscription.'
-    },
-    {
-      score: 62,
-      techStack: ['SQL', 'PostgreSQL'],
-      date: new Date('2025-02-10'),
-      feedback: 'Solid basic queries. Practice query optimization, indexing strategies, and EXPLAIN ANALYZE output.'
-    }
-  ];
-  userInfo:any
-  constructor(private router: Router, private storageService: StorageService, private authService : AuthService) {}
+  recentPerformances: Performance[] = [];
+  userInfo: any;
+
+  constructor(
+    private router:          Router,
+    private storageService:  StorageService,
+    private authService:     AuthService,
+    private feedbackService: FeedbackService,
+    private cdr:             ChangeDetectorRef   // ← added
+  ) {}
 
   ngOnInit(): void {
     const token = this.storageService.getToken();
@@ -57,6 +47,32 @@ export class Dashboard implements OnInit{
       return;
     }
     this.userInfo = this.storageService.getUser();
+
+    this.feedbackService.getUserStatistics(this.userInfo.id).subscribe({
+      next: (res) => {
+        this.avgScore        = Math.round(res[0]) ?? 0;
+        this.bestScore       = Math.round(res[1]) ?? 0;
+        this.totalInterviews = res[2] ?? 0;
+        this.cdr.detectChanges();   // ← force re-render
+      },
+      error: (err) => console.error('Error fetching statistics:', err)
+    });
+
+    this.feedbackService.getLastThreeUserInterviews(this.userInfo.id).subscribe({
+      next: (res) => {
+        this.recentPerformances = res.map((interview: any) => ({
+          score:     Math.round(interview.feedback?.score ?? 0),
+          techStack: interview.techStack ?? '',
+          date:      new Date(interview.startTime),
+          feedback:  interview.feedback?.improvementsSuggestions
+            ?.split('||')
+            .map((s: string) => s.trim())
+            .filter(Boolean) ?? []
+        }));
+        this.cdr.detectChanges();   // ← force re-render
+      },
+      error: (err) => console.error('Error fetching last three interviews:', err)
+    });
   }
 
   onLogout(): void {
@@ -65,7 +81,6 @@ export class Dashboard implements OnInit{
     });
   }
 
-  /** SVG stroke-dasharray for score ring — circumference = 2π × 15 ≈ 94.25 */
   getScoreDash(score: number): string {
     const c = 94.25;
     return `${(score / 100) * c} ${c - (score / 100) * c}`;
@@ -74,10 +89,10 @@ export class Dashboard implements OnInit{
   getScoreColor(score: number): string {
     if (score >= 80) return '#ffd35c';
     if (score >= 60) return '#fc657e';
-    return '#444';
+    return '#FF0000';
   }
+
   goToInterviewSetup(): void {
     this.router.navigate(['user/interview']);
   }
-
 }

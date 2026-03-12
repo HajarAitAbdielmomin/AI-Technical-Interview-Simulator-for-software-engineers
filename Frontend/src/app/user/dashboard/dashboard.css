@@ -368,7 +368,10 @@
   display: flex; align-items: center; gap: 5px;
   font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--coral);
 }
-.feedback-text { font-size: .78rem; color: var(--text-soft); line-height: 1.55; margin: 0; }
+.feedback-text { font-size: .78rem; color: var(--text-soft); line-height: 1.55; margin: 0; padding-left: 12px; position: relative; }
+.feedback-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px; }
+.feedback-text::before { content: '·'; position: absolute; left: 2px; color: var(--gold); font-weight: 700; }
+
 
 /* ══════════════════════════════════════
    ANIMATIONS

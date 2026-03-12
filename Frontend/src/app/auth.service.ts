@@ -18,7 +18,7 @@ export class AuthService {
 
   authenticateUser(email: any, password: any): Observable<any> {
     const url = `${environment.apiUrl}/users/auth/signin`;
-    return this.http.post(url, { email, password }, httpOptions);
+    return this.http.post(url, { email, password });
   }
   createUser(username: any,email: any, password: any):Observable<any> {
     const url = `${environment.apiUrl}/users/auth/signup`;

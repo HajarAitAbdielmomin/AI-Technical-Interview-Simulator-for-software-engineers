@@ -190,7 +190,7 @@
 
             <div class="perf-header">
               <div class="perf-tech-stack">
-                <span class="tech-badge" *ngFor="let tech of perf.techStack">{{ tech }}</span>
+                <span class="tech-badge">{{ perf.techStack }}</span>
               </div>
               <div class="perf-score">
                 <svg class="score-ring" viewBox="0 0 36 36">
@@ -222,13 +222,14 @@
                 </svg>
                 Improvement Suggestions
               </div>
-              <p class="feedback-text">{{ perf.feedback }}</p>
+              <ul class="feedback-list">
+                <li class="feedback-text" *ngFor="let point of perf.feedback">{{ point }}</li>
+              </ul>
             </div>
 
           </div>
         </div>
       </section>
-
     </main>
   </div>
 </div>
