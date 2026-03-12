@@ -24,7 +24,7 @@ export class InterviewService {
   }
 
   deleteInterview(id: number): Observable<any> {
-    return this.http.delete(`${environment.apiUrl}/interviews/${id}`, { responseType: 'text' });
+    return this.http.delete(`${environment.apiUrl}/interviews/${id}/delete`, { responseType: 'text' });
   }
 
   getInterviewById(id: string): Observable<any> {
