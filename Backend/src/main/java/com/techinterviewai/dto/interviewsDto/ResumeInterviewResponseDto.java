@@ -3,7 +3,6 @@ package com.techinterviewai.dto.interviewsDto;
 import com.techinterviewai.enums.InterviewerType;
 import com.techinterviewai.enums.Level;
 import com.techinterviewai.enums.Status;
-import com.techinterviewai.models.QuestionAnswer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,5 +21,5 @@ public class ResumeInterviewResponseDto {
     private long remainingSeconds;
     private int questionsAnswered;
     private int totalQuestions;
-    private List<QuestionAnswer> history;
+    private List<QuestionAnswerDto> history;
 }

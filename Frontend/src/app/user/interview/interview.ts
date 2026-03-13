@@ -38,13 +38,12 @@ export interface SubmitAnswerResponse {
   interviewComplete: boolean;
 }
 
-/** Shape returned by interviewService.endInterview(id) — adjust fields to match your API */
 export interface FeedbackResponse {
   id:                  number;
-  score:               number;          // 0–100
-  strengths:           string;        // list of strength points
-  weaknesses:          string;        // list of weakness points
-  improvementsSuggestions: string;      // list of improvement suggestions
+  score:               number;
+  strengths:           string;
+  weaknesses:          string;
+  improvementsSuggestions: string;
 }
 export interface ParsedFeedback {
   id:                    number;
@@ -97,9 +96,11 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
   private secondsLeft   = 1800;
   private timerInterval: any;
-  timerExpired = false;   // flipped only after time's-up message is pushed
+  timerExpired = false;
 
-  get remainingTime():  string  { const m = Math.floor(this.secondsLeft/60).toString().padStart(2,'0'); const s = (this.secondsLeft%60).toString().padStart(2,'0'); return `${m}:${s}`; }
+  get remainingTime():  string  { const m = Math.floor(this.secondsLeft/60).toString().padStart(2,'0');
+                                  const s = (this.secondsLeft%60).toString().padStart(2,'0');
+                                  return `${m}:${s}`; }
   get isTimerWarning(): boolean { return this.secondsLeft <= 60 && this.secondsLeft > 30; }
   get isTimerDanger():  boolean { return this.secondsLeft <= 30 && !this.timerExpired; }
   get timeIsUp():       boolean { return this.timerExpired; }
@@ -114,15 +115,15 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   messages: ChatMessage[] = [];
   private shouldScroll = false;
 
-  // ── Early-exit confirmation dialog ──
-  showExitDialog    = false;   // controls dialog visibility
-  isEndingInterview = false;   // shows spinner while API call is in flight
+  // Early exit confirmation dialog
+  showExitDialog    = false;
+  isEndingInterview = false;
 
-  // ── Feedback card ──
-  showFeedbackCard  = false;   // becomes true 5s after endInterview API responds
+  // Feedback card
+  showFeedbackCard  = false;
   feedbackData:     ParsedFeedback  | null = null;
 
-  /** Tailwind/CSS class for the score arc colour */
+
   get scoreColor(): string {
     if (!this.feedbackData) return 'score-gray';
     const s = this.feedbackData.score;
@@ -131,7 +132,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     return 'score-coral';
   }
 
-  /** Human-readable severity label */
   get scoreSeverity(): string {
     if (!this.feedbackData) return '';
     const s = this.feedbackData.score;
@@ -195,7 +195,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
       this.secondsLeft = msLeft > 0 ? Math.floor(msLeft / 1000) : 300;
     }
 
-    this.secondsLeft = 60;
+    //this.secondsLeft = 60;
 
     this.cdr.markForCheck();
   }
@@ -208,57 +208,33 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     clearInterval(this.timerInterval);
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // END INTERVIEW — two paths
-  // ══════════════════════════════════════════════════════════════════════════
-
-  /**
-   * Called by the "End Interview" button in the topbar.
-   * If the interview is not yet complete (< 8 Q&A done), show a warning dialog.
-   * If it is already complete, end directly.
-   */
   onEndInterview(): void {
     if (!this.interviewComplete) {
-      // Interview not finished → ask the user to confirm early exit
       this.showExitDialog = true;
     } else {
-      // Already finished → end cleanly
       this.endInterviewAndShowFeedback();
     }
   }
 
-  /** User confirmed early exit from the dialog */
   confirmEarlyExit(): void {
     this.showExitDialog = false;
     clearInterval(this.timerInterval);
     this.router.navigate(['/user/dashboard']);
   }
 
-  /** User changed their mind → close the dialog and keep going */
   cancelExit(): void {
     this.showExitDialog = false;
   }
 
-  /**
-   * Calls interviewService.endInterview(id), then navigates to dashboard.
-   * Used in three situations:
-   *   1. User clicked "End Interview" after finishing all 8 Q&A.
-   *   2. User confirmed early exit from the dialog.
-   *   3. Timer ran out (automatic end).
-   */
   private endInterviewAndShowFeedback(): void {
     clearInterval(this.timerInterval);
     this.isEndingInterview = true;
-
-    // Step 1 — end the interview (API returns plain text, not JSON)
     this.interviewService.endInterview(this.interview.id).subscribe({
       next: () => {
-        // Step 2 — fetch the feedback JSON in a separate call
         this.interviewService.getFeedback(this.interview.id).subscribe({
           next: (raw: FeedbackResponse) => {
             this.isEndingInterview = false;
 
-            // Parse the '||'-delimited strings into arrays
             const feedback: ParsedFeedback = {
               id:                    raw.id,
               score:                 raw.score,
@@ -267,7 +243,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
               improvementsSuggestions: raw.improvementsSuggestions?.split('||').map(s => s.trim()).filter(Boolean) ?? []
             };
 
-            // Wait 3s after API responds (user already waited ~2s before the call)
             setTimeout(() => {
               this.feedbackData    = feedback;
               this.showFeedbackCard = true;
@@ -288,8 +263,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
       }
     });
   }
-  // ── Gauge helpers (used in template — Math not allowed directly in Angular templates) ──
-  // Half-circle arc path length ≈ π × 65 ≈ 204
+
   private readonly ARC_LEN = 204;
 
   gaugeColor(score: number): string {
@@ -302,20 +276,16 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     return this.ARC_LEN - (score / 100) * this.ARC_LEN;
   }
 
-  /** X coordinate of the dot at the tip of the filled arc */
   gaugeDotX(score: number): number {
-    const angle = (score / 100) * Math.PI; // 0 → π (left to right)
-    return 80 - 65 * Math.cos(angle);      // centre-x = 80, radius = 65
+    const angle = (score / 100) * Math.PI;
+    return 80 - 65 * Math.cos(angle);
   }
 
-  /** Y coordinate of the dot at the tip of the filled arc */
   gaugeDotY(score: number): number {
     const angle = (score / 100) * Math.PI;
-    return 95 - 65 * Math.sin(angle);      // baseline y = 95
+    return 95 - 65 * Math.sin(angle);
   }
-  // ══════════════════════════════════════════════════════════════════════════
-  // READY
-  // ══════════════════════════════════════════════════════════════════════════
+
   onReady(): void {
     this.userConfirmed        = true;
     this.confirmTime          = this.nowTime();
@@ -330,9 +300,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
   onNotReady(): void {}
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // SEND MESSAGE
-  // ══════════════════════════════════════════════════════════════════════════
   sendMessage(): void {
     const text = this.inputText.trim();
     if (!text || !this.interviewStarted || this.timeIsUp || this.interviewComplete) return;
@@ -355,11 +322,8 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         this.isTyping = false;
 
         if (res.interviewComplete || this.isLastQuestion) {
-          // ── All 8 answered ───────────────────────────────────────────────
           this.interviewComplete = true;
 
-          // Replace placeholder with completion message.
-          // Reassign the whole array so Angular's change detection picks it up.
           const idx = this.messages.indexOf(placeholder);
           if (idx !== -1) {
             const updated = [...this.messages];
@@ -373,12 +337,9 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
           this.shouldScroll = true;
           this.cdr.detectChanges();
 
-          // Wait 2s so the completion message is readable,
-          // then call endInterview → getFeedback → show card after another 3s
           setTimeout(() => this.endInterviewAndShowFeedback(), 2000);
 
         } else {
-          // ── More questions remain ─────────────────────────────────────────
           const idx = this.messages.indexOf(placeholder);
           if (idx !== -1) this.messages.splice(idx, 1);
 
@@ -444,7 +405,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     el.style.height = Math.min(el.scrollHeight, 160) + 'px';
   }
 
-  // ── Private helpers ────────────────────────────────────────────────────────
   goToDashboard(): void {
     this.router.navigate(['/user/dashboard']);
   }
@@ -480,11 +440,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         this.cdr.detectChanges();
       } else {
         clearInterval(this.timerInterval);
-
-        // 1. Flip flag — locks input, shows banner
         this.timerExpired = true;
-
-        // 2. Push the time's-up chat message
         this.messages = [...this.messages, {
           role: 'ai',
           text: `⏱️ Time's up, ${this.userName}! That wraps up our session. Thank you for your answers, I'll have feedback for you in 3s.`,
@@ -492,8 +448,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         }];
         this.shouldScroll = true;
         this.cdr.detectChanges();
-
-        // 3. Give the user 5s to read the message, then end
         setTimeout(() => this.endInterviewAndShowFeedback(), 2000);
       }
     }, 1000);

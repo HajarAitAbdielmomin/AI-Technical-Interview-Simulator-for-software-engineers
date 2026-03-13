@@ -19,6 +19,10 @@ export class InterviewService {
     const url = `${environment.apiUrl}/interviews`;
     return this.http.get(url, httpOptions);
   }
+
+  getResumeData(interviewId: number): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/interviews/${interviewId}/resume`);
+  }
   getUserInterviews(userId: string): Observable<any[]> {
     return this.http.get<ApiInterview[]>(`${environment.apiUrl}/interviews/user/${userId}/all`);
   }

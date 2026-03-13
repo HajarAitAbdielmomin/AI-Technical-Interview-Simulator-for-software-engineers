@@ -1,5 +1,6 @@
 package com.techinterviewai.dto.interviewsDto;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 

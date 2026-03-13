@@ -23,4 +23,5 @@ export const routes: Routes = [
   // ── Full-screen (no layout) ──
   { path: 'user/interview/setup', component: InterviewSetup },
   { path: 'user/interview/:id',   component: Interview },
+  { path: 'user/interview/:id/resume', component: Interview },
 ];

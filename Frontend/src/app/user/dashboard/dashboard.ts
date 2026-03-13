@@ -61,7 +61,7 @@ export class Dashboard implements OnInit {
        this.avgScore        = Math.round(res[0]) ?? 0;
        this.bestScore       = Math.round(res[1]) ?? 0;
        this.totalInterviews = res[2] ?? 0;
-       this.cdr.detectChanges();   // ← force re-render
+       this.cdr.detectChanges();
      },
      error: (err) => console.error('Error fetching statistics:', err)
    });
@@ -78,7 +78,7 @@ export class Dashboard implements OnInit {
             .map((s: string) => s.trim())
             .filter(Boolean) ?? []
         }));
-        this.cdr.detectChanges();   // ← force re-render
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error fetching last three interviews:', err)
     });
@@ -100,7 +100,4 @@ export class Dashboard implements OnInit {
     return '#FF0000';
   }
 
-  goToInterviewSetup(): void {
-    this.router.navigate(['user/interview']);
-  }
 }

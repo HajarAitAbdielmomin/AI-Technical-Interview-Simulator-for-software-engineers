@@ -91,18 +91,17 @@ export class InterviewsData implements OnInit {
     return pages;
   }
 
-  // Gauge arc dash — total arc length ≈ 172.8 (half-circle r=55)
   getGaugeDash(score: number | null): string {
     if (score == null) return '0 172.8';
     const filled = (score / 100) * 172.8;
     return `${filled} 172.8`;
   }
 
-  // ── Delete dialog ──
+  // Delete dialog
   deleteTarget: InterviewRow | null = null;
   isDeleting = false;
 
-  // ── Personas ──
+  // Personas
   private readonly personas: Record<InterviewerType, { name: string; initials: string; role: string }> = {
     FAANG_STRICT:     { name: 'Dr. Marcus Reid', initials: 'MR', role: 'Senior Staff · FAANG'   },
     STARTUP_FRIENDLY: { name: 'Sofia Chen',      initials: 'SC', role: 'CTO · Startup'          },
@@ -157,10 +156,10 @@ export class InterviewsData implements OnInit {
             questionAnswer:  (iv.questionAnswer ?? []).map(qa => ({ question: qa.question, userAnswer: qa.userAnswer }))
           }))
           .sort((a, b) => {
-            // IN_PROGRESS always first
+
             if (a.status === 'IN_PROGRESS' && b.status !== 'IN_PROGRESS') return -1;
             if (a.status !== 'IN_PROGRESS' && b.status === 'IN_PROGRESS') return  1;
-            // Then by date descending
+
             return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
           });
 

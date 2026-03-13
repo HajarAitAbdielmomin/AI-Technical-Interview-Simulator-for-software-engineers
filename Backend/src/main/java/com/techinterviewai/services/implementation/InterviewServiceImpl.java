@@ -175,9 +175,17 @@ public class InterviewServiceImpl implements InterviewService {
     @Override
     public ResumeInterviewResponseDto resumeInterview(Long interviewId) {
         Interview interview = getInterviewEntity(interviewId);
-        
         long remainingSeconds = getRemainingTime(interview.getStartTime());
-        
+
+        List<QuestionAnswerDto> history = interview.getQuestionAnswer().stream()
+                .map(qa -> {
+                    QuestionAnswerDto dto = new QuestionAnswerDto();
+                    dto.setQuestion(qa.getQuestion());
+                    dto.setUserAnswer(qa.getUserAnswer());
+                    return dto;
+                })
+                .toList();
+
         return new ResumeInterviewResponseDto(
             interview.getId(),
             interview.getStatus(),
@@ -187,7 +195,7 @@ public class InterviewServiceImpl implements InterviewService {
             Math.max(0, remainingSeconds),
             interview.getQuestionAnswer().size(),
             maxQuestions,
-            interview.getQuestionAnswer()
+            history
         );
     }
 
