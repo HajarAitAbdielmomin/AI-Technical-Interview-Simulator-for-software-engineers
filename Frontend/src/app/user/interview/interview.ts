@@ -1,6 +1,6 @@
 import {
   Component, OnInit, OnDestroy,
-  ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef
+  ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef, NgZone
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
@@ -97,11 +97,12 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
   private secondsLeft   = 1800;
   private timerInterval: any;
+  timerExpired = false;   // flipped only after time's-up message is pushed
 
   get remainingTime():  string  { const m = Math.floor(this.secondsLeft/60).toString().padStart(2,'0'); const s = (this.secondsLeft%60).toString().padStart(2,'0'); return `${m}:${s}`; }
   get isTimerWarning(): boolean { return this.secondsLeft <= 60 && this.secondsLeft > 30; }
-  get isTimerDanger():  boolean { return this.secondsLeft <= 30 && !this.timeIsUp; }
-  get timeIsUp():       boolean { return this.secondsLeft <= 0  && this.interviewStarted; }
+  get isTimerDanger():  boolean { return this.secondsLeft <= 30 && !this.timerExpired; }
+  get timeIsUp():       boolean { return this.timerExpired; }
 
   interviewStarted     = false;
   userConfirmed        = false;
@@ -150,7 +151,8 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     private route:          ActivatedRoute,
     private storageService: StorageService,
     private interviewService: InterviewService,
-    private cdr:            ChangeDetectorRef
+    private cdr:            ChangeDetectorRef,
+    private ngZone:         NgZone
   ) {}
 
   ngOnInit(): void {
@@ -373,7 +375,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
           // Wait 2s so the completion message is readable,
           // then call endInterview → getFeedback → show card after another 3s
-          setTimeout(() => this.endInterviewAndShowFeedback(), 5000);
+          setTimeout(() => this.endInterviewAndShowFeedback(), 3000);
 
         } else {
           // ── More questions remain ─────────────────────────────────────────
@@ -388,24 +390,34 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
           this.interviewService.generateQuestion(this.interview.id).subscribe({
             next: (qRes: GenerateQuestionResponse) => {
-              this.currentQuestionNumber = qRes.questionNumber;
-              this.isLastQuestion        = qRes.isLastQuestion;
-              this.isTyping              = false;
+              this.ngZone.run(() => {
+                this.currentQuestionNumber = qRes.questionNumber;
+                this.isLastQuestion        = qRes.isLastQuestion;
+                this.isTyping              = false;
 
-              const i = this.messages.indexOf(nextPlaceholder);
-              if (i !== -1) {
-                this.messages[i] = { role: 'ai', text: qRes.question, time: this.nowTime() };
-              }
-              this.shouldScroll = true;
-              setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
+                const i = this.messages.indexOf(nextPlaceholder);
+                if (i !== -1) {
+                  const updated = [...this.messages];
+                  updated[i] = { role: 'ai', text: qRes.question, time: this.nowTime() };
+                  this.messages = updated;
+                }
+                this.shouldScroll = true;
+                this.cdr.detectChanges();
+                setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
+              });
             },
             error: () => {
-              this.isTyping = false;
-              const i = this.messages.indexOf(nextPlaceholder);
-              if (i !== -1) {
-                this.messages[i] = { role: 'ai', text: 'Sorry, failed to load the next question. Please try again.', time: this.nowTime() };
-              }
-              this.shouldScroll = true;
+              this.ngZone.run(() => {
+                this.isTyping = false;
+                const i = this.messages.indexOf(nextPlaceholder);
+                if (i !== -1) {
+                  const updated = [...this.messages];
+                  updated[i] = { role: 'ai', text: 'Sorry, failed to load the next question. Please try again.', time: this.nowTime() };
+                  this.messages = updated;
+                }
+                this.shouldScroll = true;
+                this.cdr.detectChanges();
+              });
             }
           });
         }
@@ -440,17 +452,23 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   private fetchNextQuestion(): void {
     this.interviewService.generateQuestion(this.interview.id).subscribe({
       next: (res: GenerateQuestionResponse) => {
-        this.currentQuestionNumber = res.questionNumber;
-        this.isLastQuestion        = res.isLastQuestion;
-        this.firstQuestion         = res.question;
-        this.isTyping              = false;
-        this.shouldScroll          = true;
-        setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
+        this.ngZone.run(() => {
+          this.currentQuestionNumber = res.questionNumber;
+          this.isLastQuestion        = res.isLastQuestion;
+          this.firstQuestion         = res.question;
+          this.isTyping              = false;
+          this.shouldScroll          = true;
+          this.cdr.detectChanges();
+          setTimeout(() => this.inputRef?.nativeElement?.focus(), 100);
+        });
       },
       error: () => {
-        this.firstQuestion = 'Sorry, failed to load the first question. Please refresh the page.';
-        this.isTyping      = false;
-        this.shouldScroll  = true;
+        this.ngZone.run(() => {
+          this.firstQuestion = 'Sorry, failed to load the first question. Please refresh the page.';
+          this.isTyping      = false;
+          this.shouldScroll  = true;
+          this.cdr.detectChanges();
+        });
       }
     });
   }
@@ -459,19 +477,24 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     this.timerInterval = setInterval(() => {
       if (this.secondsLeft > 0) {
         this.secondsLeft--;
+        this.cdr.detectChanges();
       } else {
         clearInterval(this.timerInterval);
 
-        // Add the time's-up message in chat
-        this.messages.push({
-          role: 'ai',
-          text: `⏱️ Time's up, ${this.userName}! That wraps up our session. Thank you for your answers, I'll have feedback for you shortly.`,
-          time: this.nowTime()
-        });
-        this.shouldScroll = true;
+        // 1. Flip flag — locks input, shows banner
+        this.timerExpired = true;
 
-        // Automatically end the interview when timer reaches 0
-        setTimeout(() => this.endInterviewAndShowFeedback(), 5000);
+        // 2. Push the time's-up chat message
+        this.messages = [...this.messages, {
+          role: 'ai',
+          text: `⏱️ Time's up, ${this.userName}! That wraps up our session. Thank you for your answers, I'll have feedback for you in 3s.`,
+          time: this.nowTime()
+        }];
+        this.shouldScroll = true;
+        this.cdr.detectChanges();
+
+        // 3. Give the user 5s to read the message, then end
+        setTimeout(() => this.endInterviewAndShowFeedback(), 3000);
       }
     }, 1000);
   }

@@ -19,6 +19,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         Long maxScore = feedbackRepository.findMaxScoreByUserId(userId);
         Long numInterviews = feedbackRepository.countInterviewsByUserId(userId);
 
-       return List.of(averageScore, maxScore, numInterviews);
+        return List.of(
+            averageScore != null ? averageScore : 0L,
+            maxScore != null ? maxScore : 0L,
+            numInterviews != null ? numInterviews : 0L
+        );
     }
 }
