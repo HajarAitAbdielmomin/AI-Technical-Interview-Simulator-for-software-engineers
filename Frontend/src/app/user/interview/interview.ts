@@ -375,7 +375,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
 
           // Wait 2s so the completion message is readable,
           // then call endInterview → getFeedback → show card after another 3s
-          setTimeout(() => this.endInterviewAndShowFeedback(), 3000);
+          setTimeout(() => this.endInterviewAndShowFeedback(), 2000);
 
         } else {
           // ── More questions remain ─────────────────────────────────────────
@@ -494,7 +494,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
         this.cdr.detectChanges();
 
         // 3. Give the user 5s to read the message, then end
-        setTimeout(() => this.endInterviewAndShowFeedback(), 3000);
+        setTimeout(() => this.endInterviewAndShowFeedback(), 2000);
       }
     }, 1000);
   }
