@@ -7,51 +7,17 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../storage.service';
 import { InterviewService } from '../../interview.service';
-
-export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'JUNIOR_FRIENDLY';
-export type InterviewLevel  = 'INTERN' | 'JUNIOR' | 'MID' | 'SENIOR' | 'LEAD' | 'ARCHITECT';
-
-export interface InterviewConfig {
-  techStack:       string;
-  interviewerType: InterviewerType;
-  level:           InterviewLevel;
+import {
+  InterviewerType,
+  InterviewLevel,
+  ChatMessage,
+  GenerateQuestionResponse,
+  SubmitAnswerResponse,
+  FeedbackResponse,
+  ParsedFeedback,
+  InterviewConfig
 }
-
-export interface ChatMessage {
-  role: 'ai' | 'user';
-  text: string;
-  time: string;
-  typing?: boolean;
-}
-
-export interface GenerateQuestionResponse {
-  question:       string;
-  questionNumber: number;
-  totalQuestions: number;
-  isLastQuestion: boolean;
-}
-
-export interface SubmitAnswerResponse {
-  questionAnswerId:  string | number;
-  question:          string;
-  userAnswer:        string;
-  interviewComplete: boolean;
-}
-
-export interface FeedbackResponse {
-  id:                  number;
-  score:               number;
-  strengths:           string;
-  weaknesses:          string;
-  improvementsSuggestions: string;
-}
-export interface ParsedFeedback {
-  id:                    number;
-  score:                 number;
-  strengths:             string[];
-  weaknesses:            string[];
-  improvementsSuggestions: string[];
-}
+  from '../../utils/InterviewsData';
 
 
 @Component({

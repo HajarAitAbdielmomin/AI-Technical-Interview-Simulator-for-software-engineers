@@ -4,43 +4,13 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../storage.service';
 import { InterviewService } from '../../interview.service';
-
-export type InterviewerType = 'FAANG_STRICT' | 'STARTUP_FRIENDLY' | 'HR_BEHAVIORAL' | 'JUNIOR_FRIENDLY';
-
-// Raw shape returned by the API
-export interface ApiFeedback {
-  score:                number;
-  strengths:            string;
-  weaknesses:           string;
-  improvement_suggestions: string;
+import {
+  InterviewerType,
+  ApiInterview,
+  InterviewRow,
+  levelsList
 }
-
-export interface ApiInterview {
-  id:              number;
-  techStack:       string;
-  interviewerType: InterviewerType;
-  level:           string;
-  status:          'IN_PROGRESS' | 'COMPLETED';
-  startTime:       string;
-  endTime:         string | null;
-  feedback:        ApiFeedback | null;
-  questionAnswer:  { question: string; userAnswer: string; interviewId: null }[];
-}
-// Mapped shape used by the template (includes parsed data for drawer)
-export interface InterviewRow {
-  id:              number;
-  interviewerType: InterviewerType;
-  techStack:       string;
-  level:           string;
-  status:          'IN_PROGRESS' | 'COMPLETED';
-  startTime:       string;
-  endTime:         string | null;
-  score:           number | null;
-  strengths:       string[];
-  weaknesses:      string[];
-  improvements:    string[];
-  questionAnswer:  { question: string; userAnswer: string }[];
-}
+  from '../../utils/InterviewsData';
 
 @Component({
   selector: 'app-interviews',
@@ -63,8 +33,6 @@ export class InterviewsData implements OnInit {
   filterLevel     = '';
   filterMinScore: number | null = null;
   filterStatus    = '';
-
-  readonly levels = ['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'ARCHITECT'];
 
   get hasActiveFilters(): boolean {
     return !!(this.filterStack || this.filterLevel || this.filterMinScore || this.filterStatus);
@@ -105,7 +73,6 @@ export class InterviewsData implements OnInit {
   private readonly personas: Record<InterviewerType, { name: string; initials: string; role: string }> = {
     FAANG_STRICT:     { name: 'Dr. Marcus Reid', initials: 'MR', role: 'Senior Staff · FAANG'   },
     STARTUP_FRIENDLY: { name: 'Sofia Chen',      initials: 'SC', role: 'CTO · Startup'          },
-    HR_BEHAVIORAL:    { name: 'James Okafor',    initials: 'JO', role: 'Head of Talent · Tech'  },
     JUNIOR_FRIENDLY:  { name: 'Priya Nair',      initials: 'PN', role: 'Lead Engineer · Mentor' }
   };
 
@@ -273,4 +240,6 @@ export class InterviewsData implements OnInit {
       }
     });
   }
+
+  protected readonly levels = levelsList;
 }
