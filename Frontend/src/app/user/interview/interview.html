@@ -82,7 +82,7 @@
           <line x1="9" y1="9" x2="15" y2="15"/>
           <line x1="15" y1="9" x2="9" y2="15"/>
         </svg>
-        End Interview
+        Quit Interview
       </button>
     </div>
 
@@ -109,8 +109,8 @@
       </div>
     </div>
 
-    <!-- Ready prompt bubble -->
-    <div class="message-row ai" style="animation-delay:.55s">
+    <!-- Ready prompt bubble — FRESH START -->
+    <div class="message-row ai" style="animation-delay:.55s" *ngIf="!isResume">
       <div class="msg-avatar"><span>{{ interviewerInitials }}</span></div>
       <div class="msg-body">
         <div class="msg-sender">{{ interviewerName }}</div>
@@ -118,7 +118,6 @@
           <p>Are you ready to begin? You'll have <strong>30 minutes</strong> once the timer starts. Click <strong>"Yes, Let's Go!"</strong> to unlock the chat. 🚀</p>
         </div>
         <div class="msg-time">Just now</div>
-
         <div class="ready-cta" *ngIf="!interviewStarted">
           <button class="btn-ready" (click)="onReady()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
@@ -131,10 +130,33 @@
       </div>
     </div>
 
+    <!-- Welcome back bubble — RESUME -->
+    <div class="message-row ai" style="animation-delay:.55s" *ngIf="isResume">
+      <div class="msg-avatar"><span>{{ interviewerInitials }}</span></div>
+      <div class="msg-body">
+        <div class="msg-sender">{{ interviewerName }}</div>
+        <div class="bubble ai-bubble ready-bubble">
+          <p>👋 Welcome back, <span class="hl-name">{{ userName }}</span>!</p>
+          <p>You previously completed <strong>{{ currentQuestionNumber }} of {{ MAX_QUESTIONS }}</strong> questions in your <span class="hl-stack">{{ config.techStack }}</span> session.</p>
+          <p>You have <strong>{{ remainingTime }}</strong> left on the clock. Ready to pick up where you left off? 💪</p>
+        </div>
+        <div class="msg-time">Just now</div>
+        <div class="ready-cta" *ngIf="!interviewStarted">
+          <button class="btn-ready" (click)="onResumeConfirm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Continue Interview
+          </button>
+          <button class="btn-not-ready" (click)="goToDashboard()">Back to Dashboard</button>
+        </div>
+      </div>
+    </div>
+
     <!-- User confirmed -->
     <div class="message-row user" *ngIf="userConfirmed">
       <div class="msg-body user-body">
-        <div class="bubble user-bubble">Yes, I'm ready! Let's start. 💪</div>
+        <div class="bubble user-bubble">{{ isResume ? "Let's finish this! 🔥" : "Yes, I'm ready! Let's start. 💪" }}</div>
         <div class="msg-time right">{{ confirmTime }}</div>
       </div>
       <div class="msg-avatar user-av"><span>{{ userInitials }}</span></div>

@@ -15,7 +15,7 @@ import {
   SubmitAnswerResponse,
   FeedbackResponse,
   ParsedFeedback,
-  InterviewConfig
+  InterviewConfig, ResumeData
 }
   from '../../utils/InterviewsData';
 
@@ -59,6 +59,11 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   currentQuestionNumber     = 0;
   isLastQuestion            = false;
   interviewComplete         = false;
+
+  // ── Resume ──
+  isResume         = false;
+  resumeHistory:   { question: string; userAnswer: string | null }[] = [];
+  resumeRemaining  = 0;
 
   private secondsLeft   = 1800;
   private timerInterval: any;
@@ -126,23 +131,87 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
     this.userName     = user?.username ?? user?.name ?? 'User';
     this.userInitials = this.userName.charAt(0).toUpperCase();
 
+    // Read ?resume=true query param
+    this.isResume = this.route.snapshot.queryParamMap.get('resume') === 'true';
+
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.interviewService.getInterviewById(params['id']).subscribe({
-          next: (interview: any) => {
-            this.interview = interview;
-            this.applyInterviewData(interview);
-            this.isLoading = false;
-          },
-          error: (err: any) => {
-            console.error('Failed to load interview', err);
-            this.isLoading = false;
-          }
-        });
+        if (this.isResume) {
+          // ── Resume path ──────────────────────────────────────────────────
+          this.interviewService.getResumeData(params['id']).subscribe({
+            next: (resume: ResumeData) => {
+              this.interview = { id: resume.interviewId };
+              this.applyResumeData(resume);
+              this.isLoading = false;
+              this.cdr.detectChanges();
+            },
+            error: (err: any) => {
+              console.error('Failed to load resume data', err);
+              this.isLoading = false;
+              this.cdr.detectChanges();
+            }
+          });
+        } else {
+          // ── Fresh start path ─────────────────────────────────────────────
+          this.interviewService.getInterviewById(params['id']).subscribe({
+            next: (interview: any) => {
+              this.interview = interview;
+              this.applyInterviewData(interview);
+              this.isLoading = false;
+              this.cdr.detectChanges();
+            },
+            error: (err: any) => {
+              console.error('Failed to load interview', err);
+              this.isLoading = false;
+              this.cdr.detectChanges();
+            }
+          });
+        }
       }
     });
   }
+  private applyResumeData(resume: ResumeData): void {
+    const validTypes:  InterviewerType[] = ['FAANG_STRICT', 'STARTUP_FRIENDLY', 'JUNIOR_FRIENDLY'];
+    const validLevels: InterviewLevel[]  = ['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'ARCHITECT'];
 
+    this.config = {
+      techStack:       resume.techStack ?? '',
+      interviewerType: validTypes.includes(resume.interviewerType)  ? resume.interviewerType  : 'FAANG_STRICT',
+      level:           validLevels.includes(resume.level)           ? resume.level            : 'MID'
+    };
+
+    this.resumeRemaining       = resume.remainingSeconds ?? 1800;
+    this.secondsLeft           = this.resumeRemaining;
+    this.currentQuestionNumber = resume.questionsAnswered;
+    this.isLastQuestion        = resume.questionsAnswered >= resume.totalQuestions - 1;
+    this.resumeHistory         = (resume.history ?? []).map(qa => ({
+      question:   qa.question,
+      userAnswer: qa.userAnswer
+    }));
+  }
+
+  // Called when user clicks "Continue Interview" on the resume welcome screen
+  onResumeConfirm(): void {
+    this.userConfirmed        = true;
+    this.confirmTime          = this.nowTime();
+    this.interviewStarted     = true;
+    this.firstQuestionVisible = true;
+    this.isTyping             = true;
+    this.shouldScroll         = true;
+
+    // Pre-fill messages with history
+    const history: ChatMessage[] = [];
+    for (const qa of this.resumeHistory) {
+      history.push({ role: 'ai',  text: qa.question,   time: '' });
+      if (qa.userAnswer) {
+        history.push({ role: 'user', text: qa.userAnswer, time: '' });
+      }
+    }
+    this.messages = history;
+
+    this.startCountdown();
+    this.fetchNextQuestion();
+  }
   private applyInterviewData(data: any): void {
     const validTypes:  InterviewerType[] = ['FAANG_STRICT', 'STARTUP_FRIENDLY', 'JUNIOR_FRIENDLY'];
     const validLevels: InterviewLevel[]  = ['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'ARCHITECT'];
@@ -153,12 +222,7 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
       level:           validLevels.includes(data.level)           ? data.level            : 'MID'
     };
 
-    if (data.endTime) {
-      const msLeft = new Date(data.endTime).getTime() - Date.now();
-      this.secondsLeft = msLeft > 0 ? Math.floor(msLeft / 1000) : 300;
-    }
-
-    //this.secondsLeft = 60;
+    this.secondsLeft = 1800;
 
     this.cdr.markForCheck();
   }

@@ -118,3 +118,15 @@ export const levels: LevelOption[] = [
 ];
 
 export const levelsList = ['INTERN', 'JUNIOR', 'MID', 'SENIOR', 'LEAD', 'ARCHITECT'];
+
+export interface ResumeData {
+  interviewId:       number;
+  status:            string;
+  techStack:         string;
+  interviewerType:   InterviewerType;
+  level:             InterviewLevel;
+  remainingSeconds:  number;
+  questionsAnswered: number;
+  totalQuestions:    number;
+  history:           { question: string; userAnswer: string | null; interviewId: null }[];
+}

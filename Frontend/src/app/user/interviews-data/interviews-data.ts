@@ -190,7 +190,9 @@ export class InterviewsData implements OnInit {
   }
 
   resumeInterview(id: number): void {
-    this.router.navigate(['/user/interview', id]);
+    this.router.navigate(['/user/interview', id], {
+      queryParams: { resume: true }
+    });
   }
 
 // ── Drawer ──
