@@ -122,9 +122,6 @@ export class Interview implements OnInit, OnDestroy, AfterViewChecked {
   ) {}
 
   ngOnInit(): void {
-    const token = this.storageService.getToken();
-    if (!token) { setTimeout(() => this.router.navigate(['/auth/login']), 0); return; }
-
     const user        = this.storageService.getUser();
     this.userName     = user?.username ?? user?.name ?? 'User';
     this.userInitials = this.userName.charAt(0).toUpperCase();

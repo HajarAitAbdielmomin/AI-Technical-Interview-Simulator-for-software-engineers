@@ -5,14 +5,17 @@ import {InterviewSetup} from './user/interviewSetup/interviewSetup';
 import {Interview} from './user/interview/interview';
 import {Layout} from './user/layout/layout';
 import {InterviewsData} from './user/interviews-data/interviews-data';
+import {authGuard, guestGuard} from './guards/auth.guard';
 export const routes: Routes = [
-  { path: '',         component: LoginPage },
-  { path: 'auth/login', component: LoginPage },
+  // ── Guest only (redirect to dashboard if already logged in) ──
+  { path: '',           component: LoginPage, canActivate: [guestGuard] },
+  { path: 'auth/login', component: LoginPage, canActivate: [guestGuard] },
 
-  // ── Layout shell (sidebar + topbar) ──
+  // ── Protected layout shell ──
   {
     path: 'user',
     component: Layout,
+    canActivate: [authGuard],
     children: [
       { path: 'dashboard',  component: Dashboard },
       { path: 'interviews', component: InterviewsData },
@@ -20,8 +23,11 @@ export const routes: Routes = [
     ]
   },
 
-  // ── Full-screen (no layout) ──
-  { path: 'user/interview/setup', component: InterviewSetup },
-  { path: 'user/interview/:id',   component: Interview },
-  { path: 'user/interview/:id/resume', component: Interview },
+  // ── Protected full-screen routes ──
+  { path: 'user/interview/setup',      component: InterviewSetup, canActivate: [authGuard] },
+  { path: 'user/interview/:id',        component: Interview,      canActivate: [authGuard] },
+  { path: 'user/interview/:id/resume', component: Interview,      canActivate: [authGuard] },
+
+  // ── Fallback ──
+  { path: '**', redirectTo: 'auth/login' },
 ];

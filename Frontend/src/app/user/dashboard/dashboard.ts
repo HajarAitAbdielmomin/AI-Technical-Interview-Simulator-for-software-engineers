@@ -43,11 +43,6 @@ export class Dashboard implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const token = this.storageService.getToken();
-    if (!token) {
-      setTimeout(() => this.router.navigate(['/auth/login']), 0);
-      return;
-    }
     this.userInfo = this.storageService.getUser();
 
     this.getStatistics(this.userInfo.id);

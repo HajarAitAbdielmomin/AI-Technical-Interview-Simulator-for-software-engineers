@@ -75,11 +75,6 @@ export class InterviewSetup implements OnInit {
   prevStep(): void { if (this.currentStep > 1) this.currentStep--; }
 
  ngOnInit(){
-   const token = this.storageService.getToken();
-   if (!token) {
-     setTimeout(() => this.router.navigate(['/auth/login']), 0);
-     return;
-   }
  }
   launchInterview(): void {
     const config: InterviewSetupConfig = {
