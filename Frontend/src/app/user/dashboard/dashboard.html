@@ -106,7 +106,19 @@
       <a class="view-all" routerLink="/user/interviews">View all →</a>
     </div>
 
-    <div class="performances-grid">
+    <!-- Empty state -->
+    <div class="perf-empty" *ngIf="recentPerformances.length === 0">
+      <div class="perf-empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <line x1="9" y1="10" x2="15" y2="10"/>
+        </svg>
+      </div>
+      <p class="perf-empty-title">No insights available yet</p>
+      <p class="perf-empty-sub">Complete your first interview to see performance insights here.</p>
+    </div>
+
+    <div class="performances-grid" *ngIf="recentPerformances.length > 0">
       <div class="perf-card"
            *ngFor="let perf of recentPerformances; let i = index"
            [style.animation-delay]="(i * 0.1) + 's'">

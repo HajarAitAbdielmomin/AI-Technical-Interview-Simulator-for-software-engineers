@@ -19,6 +19,7 @@ export class Layout implements OnInit {
 
   pageTitle    = 'Dashboard';
   pageSubtitle = 'Track your interview performance';
+  showLogoutDialog = false;
 
   // Map route segments to title/subtitle
   private readonly pageMeta: Record<string, { title: string; subtitle: string }> = {
@@ -33,12 +34,6 @@ export class Layout implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const token = this.storageService.getToken();
-    if (!token) {
-      setTimeout(() => this.router.navigate(['/auth/login']), 0);
-      return;
-    }
-
     this.userInfo    = this.storageService.getUser();
     this.userInitial = this.userInfo?.username?.charAt(0).toUpperCase() ?? 'U';
 

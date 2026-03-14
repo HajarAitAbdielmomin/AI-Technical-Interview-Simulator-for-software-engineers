@@ -147,3 +147,69 @@
   .main-content { margin-left: 0; }
   .topbar { padding: 0 16px; }
 }
+
+/* ── LOGOUT DIALOG ── */
+.logout-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+  animation: fadeIn .18s ease both;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.logout-dialog {
+  background: #161616;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 20px;
+  padding: 32px 28px 24px;
+  width: 100%; max-width: 360px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  animation: slideUp .2s ease both;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.logout-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(252,101,126,.1);
+  border: 1.5px solid rgba(252,101,126,.25);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--coral);
+}
+.logout-title {
+  font-family: var(--f-display);
+  font-size: .95rem; font-weight: 700;
+  color: var(--text-primary); margin: 0;
+}
+.logout-body {
+  font-size: .82rem; color: var(--text-soft);
+  line-height: 1.55; margin: 0; max-width: 260px;
+}
+.logout-actions {
+  display: flex; gap: 10px; width: 100%; margin-top: 4px;
+}
+.logout-btn-cancel {
+  flex: 1; padding: 10px;
+  background: rgba(255,255,255,.05);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 50px; color: var(--text-soft);
+  font-family: var(--f-body); font-size: .875rem; font-weight: 600;
+  cursor: pointer; transition: background .15s, color .15s;
+}
+.logout-btn-cancel:hover { background: rgba(255,255,255,.09); color: var(--text-primary); }
+
+.logout-btn-confirm {
+  flex: 1; padding: 10px;
+  background: rgba(252,101,126,.12);
+  border: 1.5px solid rgba(252,101,126,.3);
+  border-radius: 50px; color: var(--coral);
+  font-family: var(--f-body); font-size: .875rem; font-weight: 700;
+  cursor: pointer; transition: background .15s;
+}
+.logout-btn-confirm:hover { background: rgba(252,101,126,.22); }

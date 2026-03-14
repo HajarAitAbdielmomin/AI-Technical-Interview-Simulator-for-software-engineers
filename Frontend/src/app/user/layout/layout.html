@@ -38,7 +38,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      <button class="nav-item logout-btn" (click)="onLogout()">
+      <button class="nav-item logout-btn" (click)="showLogoutDialog = true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
@@ -48,7 +48,24 @@
       </button>
     </div>
   </aside>
-
+  <!-- ── LOGOUT CONFIRMATION DIALOG ── -->
+  <div class="logout-backdrop" *ngIf="showLogoutDialog" (click)="showLogoutDialog = false">
+    <div class="logout-dialog" (click)="$event.stopPropagation()">
+      <div class="logout-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </div>
+      <h3 class="logout-title">Sign out?</h3>
+      <p class="logout-body">You'll need to sign back in to access your interviews and results.</p>
+      <div class="logout-actions">
+        <button class="logout-btn-cancel" (click)="showLogoutDialog = false">Stay</button>
+        <button class="logout-btn-confirm" (click)="onLogout()">Yes, sign out</button>
+      </div>
+    </div>
+  </div>
   <!-- ── MAIN CONTENT ── -->
   <div class="main-content">
 
