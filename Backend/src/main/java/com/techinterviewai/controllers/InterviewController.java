@@ -22,9 +22,6 @@ public class InterviewController {
     @Value("${app.interview.max-questions:8}")
     private int maxQuestions;
 
-    @Value("${app.interview.duration-minutes:25}")
-    private int durationMinutes;
-
     @PostMapping("/start")
     public ResponseEntity<?> startInterview(@Valid @RequestBody InterviewDto interviewDto) {
         return ResponseEntity.ok(interviewService.startInterview(interviewDto));

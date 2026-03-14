@@ -7,6 +7,7 @@ import com.techinterviewai.services.QuestionGenerationService;
 import com.techinterviewai.util.PersonaPromptBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Service;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -60,6 +61,10 @@ public class QuestionGenerationServiceImpl implements QuestionGenerationService 
         Prompt prompt = new Prompt(messages);
         return questionChatClient
                 .prompt(prompt)
+                .options(OpenAiChatOptions.builder()
+                        .withModel("openai-gpt-oss-20b")
+                        .withTemperature(0.7)
+                        .build())
                 .call()
                 .content()
                 .trim();
