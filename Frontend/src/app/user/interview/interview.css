@@ -785,5 +785,32 @@
   .score-number { font-size: 2rem; }
 }
 
+/* ── Complete lock banner ── */
+.complete-lock {
+  background: rgba(74,222,128,.06);
+  border-color: rgba(74,222,128,.2);
+  color: #4ade80;
+}
 
+/* ── Generating question lock banner ── */
+.generating-lock {
+  background: rgba(255,211,92,.06);
+  border-color: rgba(255,211,92,.2);
+  color: var(--gold);
+  gap: 10px;
+}
+.generating-dots {
+  display: flex; align-items: center; gap: 4px;
+}
+.generating-dots span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--gold); opacity: .4;
+  animation: genPulse 1.2s ease-in-out infinite;
+}
+.generating-dots span:nth-child(2) { animation-delay: .2s; }
+.generating-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes genPulse {
+  0%, 100% { opacity: .4; transform: scale(1); }
+  50%       { opacity: 1;  transform: scale(1.3); }
+}
 
