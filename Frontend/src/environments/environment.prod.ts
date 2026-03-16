@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://ai-technical-interview-simulator-hkbxr.ondigitalocean.app/api',
+  apiUrl: '${process.env.API_BASE_URL}',
 };
+
