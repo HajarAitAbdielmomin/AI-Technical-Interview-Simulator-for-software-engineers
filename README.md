@@ -149,6 +149,6 @@ ng serve                  # runs on http://localhost:4200
 
 ## 👤 Built By
 
-**Hajar Ait abdielmomin** — Software Engineer  
+**Hajar Ait abdielmomin** - Software Engineer  
 Built solo for the **DigitalOcean Gradient™ AI Hackathon** with MLH.
 
