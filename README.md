@@ -3,7 +3,7 @@
 
 🔗 **Live Demo:** https://ai-technical-interview-simulator-hkbxr.ondigitalocean.app/ 
 
-🎥 **Demo Video:** https://www.youtube.com/watch?v=3bslDgSq0Kc)  
+🎥 **Demo Video:** https://youtu.be/sc45rTcTK2M?si=saplp_z1iMguwsdl 
 
 📦 **Tech Stack:** Spring Boot | Spring AI | Angular | MySQL Database | Docker | DigitalOcean
 
