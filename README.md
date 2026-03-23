@@ -5,7 +5,7 @@
 
 🎥 **Demo Video:** https://youtu.be/sc45rTcTK2M?si=saplp_z1iMguwsdl 
 
-📦 **Tech Stack:** Spring Boot | Spring AI | Angular | MySQL Database | Docker | DigitalOcean
+📦 **Tech Stack:** Spring Boot | Spring AI | Angular | MySQL Database | Docker | DigitalOcean - Gradient AI
 
 ---
 ## 🧠 About this project :
