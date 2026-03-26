@@ -55,7 +55,8 @@ Users can select between different AI interviewer personas:
 
 ---
 ## 🏗️ Architecture
-<img width="4160" height="2231" alt="project architecture drawio (1)" src="https://github.com/user-attachments/assets/c3f0d072-f08d-454c-ba2a-6753b2049804" />
+![project architecture](https://github.com/user-attachments/assets/d82a161d-40aa-4ccf-a4dd-8750036d310b)
+
 
 ---
 ## 📊 Class Diagram of the project
