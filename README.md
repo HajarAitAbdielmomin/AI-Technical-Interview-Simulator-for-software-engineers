@@ -1,8 +1,6 @@
 # 🎯 IntervAI - AI-Powered Technical Interview Simulator
 > Simulate real technical interviews with AI personas powered by DigitalOcean Gradient AI.
 
-🔗 **Live Demo:** https://ai-technical-interview-simulator-hkbxr.ondigitalocean.app/ 
-
 🎥 **Demo Video:** https://youtu.be/sc45rTcTK2M?si=saplp_z1iMguwsdl 
 
 📦 **Tech Stack:** Spring Boot | Spring AI | Angular | MySQL Database | Docker | DigitalOcean - Gradient AI
